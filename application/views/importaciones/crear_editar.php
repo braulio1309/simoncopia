@@ -315,13 +315,74 @@ if($id_importacion) {
             // 3. Guardar la Importación
             let respuestaImp = null;
             if (idImportacion && idImportacion !== "") {
+                // Obtener datos actuales antes de actualizar para comparar cambios
+                let datosAnteriores = await consulta('obtener', {
+                    tipo: 'importaciones',
+                    id: idImportacion
+                }, false);
+                
+                // Actualizar la importación
                 await consulta('actualizar', datos);
                 respuestaImp = { resultado: { resultado: idImportacion } };
+                
+                // Detectar y registrar cambios en bitácora
+                if (datosAnteriores && datosAnteriores.resultado && datosAnteriores.resultado[0]) {
+                    let anterior = datosAnteriores.resultado[0];
+                    let cambios = [];
+                    
+                    // Comparar campos importantes
+                    if (anterior.numero_orden_compra != datos.numero_orden_compra) 
+                        cambios.push('OC: ' + anterior.numero_orden_compra + ' → ' + datos.numero_orden_compra);
+                    if (anterior.razon_social != datos.razon_social) 
+                        cambios.push('Proveedor: ' + anterior.razon_social + ' → ' + datos.razon_social);
+                    if (anterior.pais_origen != datos.pais_origen) 
+                        cambios.push('País: ' + anterior.pais_origen + ' → ' + datos.pais_origen);
+                    if (anterior.fecha_estimada_llegada != datos.fecha_estimada_llegada) 
+                        cambios.push('Fecha llegada: ' + anterior.fecha_estimada_llegada + ' → ' + datos.fecha_estimada_llegada);
+                    if (anterior.importacion_estado_id != datos.importacion_estado_id) 
+                        cambios.push('Estado: ' + anterior.importacion_estado_id + ' → ' + datos.importacion_estado_id);
+                    if (anterior.moneda_preferida != datos.moneda_preferida) 
+                        cambios.push('Moneda: ' + anterior.moneda_preferida + ' → ' + datos.moneda_preferida);
+                    if (parseFloat(anterior.valor_total) != parseFloat(datos.valor_total)) 
+                        cambios.push('Valor: ' + anterior.valor_total + ' → ' + datos.valor_total);
+                    if (parseFloat(anterior.valor_trm) != parseFloat(datos.valor_trm)) 
+                        cambios.push('TRM: ' + anterior.valor_trm + ' → ' + datos.valor_trm);
+                    if (anterior.bl_awb != datos.bl_awb) 
+                        cambios.push('BL/AWB: ' + anterior.bl_awb + ' → ' + datos.bl_awb);
+                    if (anterior.contacto_principal != datos.contacto_principal) 
+                        cambios.push('Contacto: ' + anterior.contacto_principal + ' → ' + datos.contacto_principal);
+                    if (anterior.email_contacto != datos.email_contacto) 
+                        cambios.push('Email: ' + anterior.email_contacto + ' → ' + datos.email_contacto);
+                    if (anterior.condiciones_pago != datos.condiciones_pago) 
+                        cambios.push('Condiciones pago modificadas');
+                    if (anterior.notas_internas != datos.notas_internas) 
+                        cambios.push('Notas internas modificadas');
+                    
+                    // Si hubo cambios, registrar en bitácora
+                    if (cambios.length > 0) {
+                        let datosBitacoraEdicion = {
+                            tipo: 'importaciones_bitacora',
+                            importacion_id: idImportacion,
+                            usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                            observaciones: 'Importación editada - Cambios: ' + cambios.join(', ')
+                        };
+                        await consulta('crear', datosBitacoraEdicion, false);
+                    }
+                }
             } else {
                 datos.fecha_creacion = '<?php echo date("Y-m-d H:i:s"); ?>';
                 datos.usuario_id = '<?php echo $this->session->userdata("usuario_id"); ?>';
                 respuestaImp = await consulta('crear', datos, false);
-                idImportacion = respuestaImp.resultado.resultado; 
+                idImportacion = respuestaImp.resultado.resultado;
+                
+                // Crear registro en bitácora para CREACIÓN
+                let datosBitacoraCreacion = {
+                    tipo: 'importaciones_bitacora',
+                    importacion_id: idImportacion,
+                    usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                    observaciones: 'Importación creada - OC: ' + $('#numero_orden_compra').val() + ', Proveedor: ' + $('#razon_social').val() + ', Valor: ' + $('#moneda_preferida').val() + ' ' + valorTotal
+                };
+                await consulta('crear', datosBitacoraCreacion, false);
             }
 
             // 4. Lógica de Pago Automático (Si el sistema decidió que lleva anticipo)
@@ -340,10 +401,28 @@ if($id_importacion) {
                 if (pagoIdExistente && pagoIdExistente !== "") {
                     datosPago.id = pagoIdExistente;
                     await consulta('actualizar', datosPago, false);
+                    
+                    // Crear registro en bitácora para ACTUALIZACIÓN DE PAGO
+                    let datosBitacoraPagoActualizado = {
+                        tipo: 'importaciones_bitacora',
+                        importacion_id: idImportacion,
+                        usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                        observaciones: 'Pago automático actualizado - Anticipo del ' + porcentajeAutomatico + '% (' + $('#moneda_preferida').val() + ' ' + montoAnticipo.toFixed(2) + ')'
+                    };
+                    await consulta('crear', datosBitacoraPagoActualizado, false);
                 } else {
                     datosPago.fecha_creacion = '<?php echo date("Y-m-d H:i:s"); ?>';
                     datosPago.usuario_id = '<?php echo $this->session->userdata("usuario_id"); ?>';
                     await consulta('crear', datosPago, false);
+                    
+                    // Crear registro en bitácora para PAGO AUTOMÁTICO
+                    let datosBitacoraPago = {
+                        tipo: 'importaciones_bitacora',
+                        importacion_id: idImportacion,
+                        usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                        observaciones: 'Pago automático creado - Anticipo del ' + porcentajeAutomatico + '% (' + $('#moneda_preferida').val() + ' ' + montoAnticipo.toFixed(2) + ') - ' + datosPago.observaciones
+                    };
+                    await consulta('crear', datosBitacoraPago, false);
                 }
                 
                 Swal.close();
