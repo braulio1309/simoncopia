@@ -146,7 +146,7 @@ if(empty($importacion)) redirect(site_url('importaciones'));
         </div>
 
         <!-- Sección de Bitácoras -->
-        <div class="row mt-4">
+        <div class="row mt-4" id="bitacoras">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">

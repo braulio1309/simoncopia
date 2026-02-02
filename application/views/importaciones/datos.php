@@ -81,12 +81,11 @@ if (empty($importaciones)) { ?>
 
                         <td class="text-right">
                             <div class="btn-group" role="group">
-                                <button type="button"
-                                    onclick="cargarBitacoraDetalle(<?php echo $item->id; ?>)"
+                                <a href="<?php echo site_url('importaciones/ver/' . $item->id . '#bitacoras'); ?>" 
                                     class="btn btn-sm btn-light text-primary shadow-sm"
-                                    title="Ver Detalle de Bitácora">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                                    title="Ver Bitácoras">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </a>
                                 <a href="<?php echo site_url('importaciones/ver/' . $item->id); ?>" class="btn btn-sm btn-light text-secondary" title="Ver Detalle">
                                     <i class="far fa-eye"></i>
                                 </a>
@@ -116,18 +115,4 @@ if (empty($importaciones)) { ?>
             window.location.href = '<?php echo site_url("importaciones/eliminar/"); ?>' + id;
         }
     }
-
-    cargarBitacoraDetalle = (id = null) => {
-        cargarInterfaz('/bitacora/detalle', 'contenedor_importaciones_bitacora', {
-            id: id
-        })
-    }
-
-    listarImportacionesBitacora = () => {
-        cargarInterfaz('importaciones/bitacora/lista', 'contenedor_importaciones_bitacora')
-    }
-
-    $().ready(() => {
-        listarImportacionesBitacora()
-    })
 </script>
