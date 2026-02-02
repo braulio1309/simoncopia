@@ -287,3 +287,38 @@ function verificar_existencia_foto($url) {
 
     return (file_exists($directorio) && is_file($directorio)) ? $url : false;
 }
+
+/**
+ * Registra una entrada en la bitácora de importaciones
+ *
+ * @param int $importacion_id ID de la importación
+ * @param string $observaciones Mensaje descriptivo del evento
+ * @param int $usuario_id ID del usuario que realiza la acción
+ * @return bool|int ID del registro insertado o false en caso de error
+ */
+function registrar_bitacora_importacion($importacion_id, $observaciones, $usuario_id = null) {
+    $CI =& get_instance();
+    
+    // Si no se proporciona usuario_id, intenta obtenerlo de la sesión
+    if ($usuario_id === null) {
+        $usuario_id = $CI->session->userdata('usuario_id');
+    }
+    
+    // Preparar los datos para insertar
+    $datos_bitacora = [
+        'importacion_id' => $importacion_id,
+        'observaciones' => $observaciones,
+        'usuario_id' => $usuario_id,
+        'fecha_creacion' => date('Y-m-d H:i:s')
+    ];
+    
+    // Cargar el modelo si no está cargado
+    if (!isset($CI->importaciones_model)) {
+        $CI->load->model('importaciones_model');
+    }
+    
+    // Insertar en la bitácora
+    $resultado = $CI->importaciones_model->crear($datos_bitacora, 'importaciones_bitacora');
+    
+    return $resultado;
+}
