@@ -11,10 +11,10 @@ class Importaciones_model extends CI_Model
     // --------------------------------------------------------------------
     // 2. CREAR (Guardar nuevo)
     // --------------------------------------------------------------------
-    public function crear($datos)
+    public function crear($datos, $tabla = 'importaciones')
     {
         // Limpiamos el array de datos por si viene basura del JS
-        $this->db->insert('importaciones', $datos);
+        $this->db->insert($tabla, $datos);
 
         $resultado = $this->db->affected_rows() > 0;
 

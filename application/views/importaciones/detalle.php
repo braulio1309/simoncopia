@@ -144,7 +144,41 @@ if(empty($importacion)) redirect(site_url('importaciones'));
                 </div>
             </div>
         </div>
+
+        <!-- Sección de Bitácoras -->
+        <div class="row mt-4" id="bitacoras">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Bitácora de Importación</h5>
+                            <button class="btn btn-primary btn-sm" onclick="cargarBitacoraDetalle()" aria-label="Agregar nuevo registro de bitácora">
+                                <i class="fas fa-plus"></i> Agregar Registro
+                            </button>
+                        </div>
+                        <div id="contenedor_importaciones_bitacora"></div>
+                        <div id="contenedor_importaciones_bitacora_detalle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+<input type="hidden" id="importacion_id" value="<?php echo $id_importacion; ?>">
+
 <div class="block-space block-space--layout--before-footer"></div>
+
+<script>
+    cargarBitacoraDetalle = (id = null) => {
+        cargarInterfaz('importaciones/bitacora/detalle', 'contenedor_importaciones_bitacora_detalle', {id: id})
+    }
+
+    listarImportacionesBitacora = () => {
+        cargarInterfaz('importaciones/bitacora/lista', 'contenedor_importaciones_bitacora')
+    }
+
+    $().ready(() => {
+        listarImportacionesBitacora()
+    })
+</script>

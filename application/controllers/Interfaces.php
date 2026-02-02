@@ -111,6 +111,10 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->proveedores_model->actualizar_batch($tipo, $datos['cotizacion_detalle'], 'id');
             break;
 
+            case 'importaciones_bitacora':
+                $resultado = $this->importaciones_model->actualizar('importaciones_bitacora', ['id' => $id], $datos);
+            break;
+
             default:
                 if(isset($datos['clave'])) $datos['clave'] = sha1($datos['clave']);
 
@@ -579,6 +583,11 @@ class Interfaces extends CI_Controller {
             case 'importaciones_maestro_anticipos':
                 
                 print json_encode(['resultado' => $this->configuracion_model->crear($tipo, $datos)]);
+            break;
+
+            case 'importaciones_bitacora':
+                $datos['fecha_creacion'] = date('Y-m-d H:i:s');
+                print json_encode(['resultado' => $this->importaciones_model->crear($datos, 'importaciones_bitacora')]);
             break;
         }
     }

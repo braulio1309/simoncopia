@@ -106,7 +106,15 @@ class Importaciones extends MY_Controller
                 $this->load->view('core/body', $this->data);
                 break;
 
-            
+            case 'lista':
+                $this->load->view('importaciones/bitacora/lista');
+                break;
+
+            case 'detalle':
+                $datos = $this->input->post('datos');
+                $this->data['datos'] = $datos;
+                $this->load->view('importaciones/bitacora/detalle', $this->data);
+                break;
         }
     }
     // Pantalla de detalle/edición de una importación
