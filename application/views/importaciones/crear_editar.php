@@ -329,15 +329,15 @@ if($id_importacion) {
                     telefono_contacto: <?php echo json_encode($importacion->telefono_contacto ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     direccion: <?php echo json_encode($importacion->direccion ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     pais_origen: <?php echo json_encode($importacion->pais_origen ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-                    fecha_estimada_llegada: '<?php echo $importacion->fecha_estimada_llegada ? date('Y-m-d', strtotime($importacion->fecha_estimada_llegada)) : ''; ?>',
-                    fecha_ingreso_siesa: '<?php echo $importacion->fecha_ingreso_siesa ? date('Y-m-d', strtotime($importacion->fecha_ingreso_siesa)) : ''; ?>',
+                    fecha_estimada_llegada: <?php echo json_encode($importacion->fecha_estimada_llegada ? date('Y-m-d', strtotime($importacion->fecha_estimada_llegada)) : '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    fecha_ingreso_siesa: <?php echo json_encode($importacion->fecha_ingreso_siesa ? date('Y-m-d', strtotime($importacion->fecha_ingreso_siesa)) : '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     bl_awb: <?php echo json_encode($importacion->bl_awb ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-                    importacion_estado_id: '<?php echo $importacion->importacion_estado_id ?? ''; ?>',
+                    importacion_estado_id: <?php echo json_encode($importacion->importacion_estado_id ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     moneda_preferida: <?php echo json_encode($importacion->moneda_preferida ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-                    valor_total: '<?php echo $importacion->valor_total ?? ''; ?>',
-                    valor_total_cop: '<?php echo $importacion->valor_total_cop ?? ''; ?>',
-                    impuestos_dian: '<?php echo $importacion->impuestos_dian ?? ''; ?>',
-                    valor_trm: '<?php echo $importacion->valor_trm ?? ''; ?>',
+                    valor_total: <?php echo json_encode($importacion->valor_total ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    valor_total_cop: <?php echo json_encode($importacion->valor_total_cop ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    impuestos_dian: <?php echo json_encode($importacion->impuestos_dian ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    valor_trm: <?php echo json_encode($importacion->valor_trm ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     condiciones_pago: <?php echo json_encode($importacion->condiciones_pago ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     notas_internas: <?php echo json_encode($importacion->notas_internas ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>
                 };
@@ -385,7 +385,7 @@ if($id_importacion) {
                     let datosBitacoraEdicion = {
                         tipo: 'importaciones_bitacora',
                         importacion_id: idImportacion,
-                        usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                        usuario_id: <?php echo json_encode($this->session->userdata("usuario_id"), JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                         observaciones: 'Importación editada. Campos modificados: ' + cambios.join('; ')
                     };
                     consulta('crear', datosBitacoraEdicion, false);
@@ -401,7 +401,7 @@ if($id_importacion) {
                 let datosBitacoraCreacion = {
                     tipo: 'importaciones_bitacora',
                     importacion_id: idImportacion,
-                    usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                    usuario_id: <?php echo json_encode($this->session->userdata("usuario_id"), JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     observaciones: 'Importación creada'
                 };
                 consulta('crear', datosBitacoraCreacion, false);
@@ -437,7 +437,7 @@ if($id_importacion) {
                 let datosBitacoraPago = {
                     tipo: 'importaciones_bitacora',
                     importacion_id: idImportacion,
-                    usuario_id: '<?php echo $this->session->userdata("usuario_id"); ?>',
+                    usuario_id: <?php echo json_encode($this->session->userdata("usuario_id"), JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     observaciones: `Pago automático generado: Anticipo del ${porcentajeAutomatico}% por valor de ${montoFormateado}`
                 };
                 consulta('crear', datosBitacoraPago, false);
