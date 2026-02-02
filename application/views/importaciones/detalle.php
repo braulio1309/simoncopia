@@ -152,7 +152,7 @@ if(empty($importacion)) redirect(site_url('importaciones'));
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Bitácora de Importación</h5>
-                            <button class="btn btn-primary btn-sm" onclick="cargarBitacoraDetalle()">
+                            <button class="btn btn-primary btn-sm" onclick="cargarBitacoraDetalle()" aria-label="Agregar nuevo registro de bitácora">
                                 <i class="fas fa-plus"></i> Agregar Registro
                             </button>
                         </div>
