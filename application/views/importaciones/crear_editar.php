@@ -322,24 +322,24 @@ if($id_importacion) {
                 <?php if($importacion): ?>
                 let cambios = [];
                 let valoresOriginales = {
-                    numero_orden_compra: '<?php echo addslashes($importacion->numero_orden_compra ?? ''); ?>',
-                    razon_social: '<?php echo addslashes($importacion->razon_social ?? ''); ?>',
-                    contacto_principal: '<?php echo addslashes($importacion->contacto_principal ?? ''); ?>',
-                    email_contacto: '<?php echo addslashes($importacion->email_contacto ?? ''); ?>',
-                    telefono_contacto: '<?php echo addslashes($importacion->telefono_contacto ?? ''); ?>',
-                    direccion: '<?php echo addslashes($importacion->direccion ?? ''); ?>',
-                    pais_origen: '<?php echo addslashes($importacion->pais_origen ?? ''); ?>',
+                    numero_orden_compra: <?php echo json_encode($importacion->numero_orden_compra ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    razon_social: <?php echo json_encode($importacion->razon_social ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    contacto_principal: <?php echo json_encode($importacion->contacto_principal ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    email_contacto: <?php echo json_encode($importacion->email_contacto ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    telefono_contacto: <?php echo json_encode($importacion->telefono_contacto ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    direccion: <?php echo json_encode($importacion->direccion ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    pais_origen: <?php echo json_encode($importacion->pais_origen ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     fecha_estimada_llegada: '<?php echo $importacion->fecha_estimada_llegada ? date('Y-m-d', strtotime($importacion->fecha_estimada_llegada)) : ''; ?>',
                     fecha_ingreso_siesa: '<?php echo $importacion->fecha_ingreso_siesa ? date('Y-m-d', strtotime($importacion->fecha_ingreso_siesa)) : ''; ?>',
-                    bl_awb: '<?php echo addslashes($importacion->bl_awb ?? ''); ?>',
+                    bl_awb: <?php echo json_encode($importacion->bl_awb ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     importacion_estado_id: '<?php echo $importacion->importacion_estado_id ?? ''; ?>',
-                    moneda_preferida: '<?php echo addslashes($importacion->moneda_preferida ?? ''); ?>',
+                    moneda_preferida: <?php echo json_encode($importacion->moneda_preferida ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     valor_total: '<?php echo $importacion->valor_total ?? ''; ?>',
                     valor_total_cop: '<?php echo $importacion->valor_total_cop ?? ''; ?>',
                     impuestos_dian: '<?php echo $importacion->impuestos_dian ?? ''; ?>',
                     valor_trm: '<?php echo $importacion->valor_trm ?? ''; ?>',
-                    condiciones_pago: '<?php echo addslashes($importacion->condiciones_pago ?? ''); ?>',
-                    notas_internas: '<?php echo addslashes($importacion->notas_internas ?? ''); ?>'
+                    condiciones_pago: <?php echo json_encode($importacion->condiciones_pago ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    notas_internas: <?php echo json_encode($importacion->notas_internas ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>
                 };
                 
                 let nombresAmigables = {
@@ -363,9 +363,18 @@ if($id_importacion) {
                     notas_internas: 'Notas Internas'
                 };
                 
+                // Campos numéricos que necesitan normalización
+                let camposNumericos = ['valor_total', 'valor_total_cop', 'impuestos_dian', 'valor_trm'];
+                
                 for (let campo in valoresOriginales) {
                     let valorOriginal = String(valoresOriginales[campo] || '');
                     let valorNuevo = String(datos[campo] || '');
+                    
+                    // Normalizar campos numéricos para comparación
+                    if (camposNumericos.includes(campo)) {
+                        valorOriginal = parseFloat(valorOriginal || 0).toFixed(2);
+                        valorNuevo = parseFloat(valorNuevo || 0).toFixed(2);
+                    }
                     
                     if (valorOriginal !== valorNuevo) {
                         cambios.push(`${nombresAmigables[campo]}: "${valorOriginal}" → "${valorNuevo}"`);
@@ -421,7 +430,10 @@ if($id_importacion) {
                 }
                 
                 // Registro en bitácora para PAGO AUTOMÁTICO
-                let montoFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: $('#moneda_preferida').val() }).format(montoAnticipo);
+                let monedaActual = $('#moneda_preferida').val();
+                // Validar que sea un código ISO válido (USD, COP, EUR)
+                let monedaValida = ['USD', 'COP', 'EUR'].includes(monedaActual) ? monedaActual : 'USD';
+                let montoFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: monedaValida }).format(montoAnticipo);
                 let datosBitacoraPago = {
                     tipo: 'importaciones_bitacora',
                     importacion_id: idImportacion,
