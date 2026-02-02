@@ -317,11 +317,94 @@ if($id_importacion) {
             if (idImportacion && idImportacion !== "") {
                 await consulta('actualizar', datos);
                 respuestaImp = { resultado: { resultado: idImportacion } };
+                
+                // Registro en bitácora para EDICIÓN con detalle de cambios
+                <?php if($importacion): ?>
+                let cambios = [];
+                let valoresOriginales = {
+                    numero_orden_compra: <?php echo json_encode($importacion->numero_orden_compra ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    razon_social: <?php echo json_encode($importacion->razon_social ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    contacto_principal: <?php echo json_encode($importacion->contacto_principal ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    email_contacto: <?php echo json_encode($importacion->email_contacto ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    telefono_contacto: <?php echo json_encode($importacion->telefono_contacto ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    direccion: <?php echo json_encode($importacion->direccion ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    pais_origen: <?php echo json_encode($importacion->pais_origen ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    fecha_estimada_llegada: <?php echo json_encode($importacion->fecha_estimada_llegada ? date('Y-m-d', strtotime($importacion->fecha_estimada_llegada)) : '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    fecha_ingreso_siesa: <?php echo json_encode($importacion->fecha_ingreso_siesa ? date('Y-m-d', strtotime($importacion->fecha_ingreso_siesa)) : '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    bl_awb: <?php echo json_encode($importacion->bl_awb ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    importacion_estado_id: <?php echo json_encode($importacion->importacion_estado_id ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    moneda_preferida: <?php echo json_encode($importacion->moneda_preferida ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    valor_total: <?php echo json_encode($importacion->valor_total ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    valor_total_cop: <?php echo json_encode($importacion->valor_total_cop ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    impuestos_dian: <?php echo json_encode($importacion->impuestos_dian ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    valor_trm: <?php echo json_encode($importacion->valor_trm ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    condiciones_pago: <?php echo json_encode($importacion->condiciones_pago ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    notas_internas: <?php echo json_encode($importacion->notas_internas ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>
+                };
+                
+                let nombresAmigables = {
+                    numero_orden_compra: 'Número Orden de Compra',
+                    razon_social: 'Razón Social',
+                    contacto_principal: 'Contacto Principal',
+                    email_contacto: 'Email de Contacto',
+                    telefono_contacto: 'Teléfono de Contacto',
+                    direccion: 'Dirección',
+                    pais_origen: 'País de Origen',
+                    fecha_estimada_llegada: 'Fecha Estimada Llegada',
+                    fecha_ingreso_siesa: 'Fecha Ingreso SIESA',
+                    bl_awb: 'BL / AWB',
+                    importacion_estado_id: 'Estado',
+                    moneda_preferida: 'Moneda Preferida',
+                    valor_total: 'Valor Total',
+                    valor_total_cop: 'Valor Total COP',
+                    impuestos_dian: 'Impuestos DIAN',
+                    valor_trm: 'Valor TRM',
+                    condiciones_pago: 'Condiciones de Pago',
+                    notas_internas: 'Notas Internas'
+                };
+                
+                // Campos numéricos que necesitan normalización
+                let camposNumericos = ['valor_total', 'valor_total_cop', 'impuestos_dian', 'valor_trm'];
+                
+                for (let campo in valoresOriginales) {
+                    let valorOriginal = String(valoresOriginales[campo] || '');
+                    let valorNuevo = String(datos[campo] || '');
+                    
+                    // Normalizar campos numéricos para comparación
+                    if (camposNumericos.includes(campo)) {
+                        valorOriginal = parseFloat(valorOriginal || 0).toFixed(2);
+                        valorNuevo = parseFloat(valorNuevo || 0).toFixed(2);
+                    }
+                    
+                    if (valorOriginal !== valorNuevo) {
+                        cambios.push(`${nombresAmigables[campo]}: "${valorOriginal}" → "${valorNuevo}"`);
+                    }
+                }
+                
+                if (cambios.length > 0) {
+                    let datosBitacoraEdicion = {
+                        tipo: 'importaciones_bitacora',
+                        importacion_id: idImportacion,
+                        usuario_id: <?php echo json_encode($this->session->userdata("usuario_id"), JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                        observaciones: 'Importación editada. Campos modificados: ' + cambios.join('; ')
+                    };
+                    consulta('crear', datosBitacoraEdicion, false);
+                }
+                <?php endif; ?>
             } else {
                 datos.fecha_creacion = '<?php echo date("Y-m-d H:i:s"); ?>';
                 datos.usuario_id = '<?php echo $this->session->userdata("usuario_id"); ?>';
                 respuestaImp = await consulta('crear', datos, false);
                 idImportacion = respuestaImp.resultado.resultado; 
+                
+                // Registro en bitácora para CREACIÓN
+                let datosBitacoraCreacion = {
+                    tipo: 'importaciones_bitacora',
+                    importacion_id: idImportacion,
+                    usuario_id: <?php echo json_encode($this->session->userdata("usuario_id"), JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    observaciones: 'Importación creada'
+                };
+                consulta('crear', datosBitacoraCreacion, false);
             }
 
             // 4. Lógica de Pago Automático (Si el sistema decidió que lleva anticipo)
@@ -345,6 +428,19 @@ if($id_importacion) {
                     datosPago.usuario_id = '<?php echo $this->session->userdata("usuario_id"); ?>';
                     await consulta('crear', datosPago, false);
                 }
+                
+                // Registro en bitácora para PAGO AUTOMÁTICO
+                let monedaActual = $('#moneda_preferida').val();
+                // Validar que sea un código ISO válido (USD, COP, EUR)
+                let monedaValida = ['USD', 'COP', 'EUR'].includes(monedaActual) ? monedaActual : 'USD';
+                let montoFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: monedaValida }).format(montoAnticipo);
+                let datosBitacoraPago = {
+                    tipo: 'importaciones_bitacora',
+                    importacion_id: idImportacion,
+                    usuario_id: <?php echo json_encode($this->session->userdata("usuario_id"), JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    observaciones: `Pago automático generado: Anticipo del ${porcentajeAutomatico}% por valor de ${montoFormateado}`
+                };
+                consulta('crear', datosBitacoraPago, false);
                 
                 Swal.close();
                 mostrarAviso('exito', 'Importación guardada. Anticipo del '+porcentajeAutomatico+'% generado.');
