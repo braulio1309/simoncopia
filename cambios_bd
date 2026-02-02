@@ -1,0 +1,830 @@
+-- 20240930 Se agregan tablas de solicitudes credito y solicitudes credito clientes
+CREATE TABLE `solicitudes_credito` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `fecha_creacion` datetime DEFAULT NULL,
+    `nombre` varchar(255) DEFAULT NULL,
+    `persona_tipo_id` int(11) DEFAULT NULL,
+    `identificacion_tipo_id` int(11) DEFAULT NULL,
+    `documento_numero` varchar(55) DEFAULT NULL,
+    `direccion` varchar(255) DEFAULT NULL,
+    `telefono` varchar(55) DEFAULT NULL,
+    `email` varchar(255) DEFAULT NULL,
+    `celular` varchar(55) DEFAULT NULL,
+    `representante_legal` varchar(255) DEFAULT NULL,
+    `representante_legal_documento_numero` varchar(55) DEFAULT NULL,
+    `email_factura_electronica` varchar(255) DEFAULT NULL,
+    `tesoreria_nombre` varchar(255) DEFAULT NULL,
+    `tesoreria_email` varchar(255) DEFAULT NULL,
+    `tesoreria_telefono` varchar(55) DEFAULT NULL,
+    `tesoreria_celular` varchar(55) DEFAULT NULL,
+    `comercial_nombre` varchar(55) DEFAULT NULL,
+    `comercial_email` varchar(255) DEFAULT NULL,
+    `comercial_telefono` varchar(55) DEFAULT NULL,
+    `comercial_celular` varchar(55) DEFAULT NULL,
+    `contabilidad_nombre` varchar(255) DEFAULT NULL,
+    `contabilidad_email` varchar(255) DEFAULT NULL,
+    `contabilidad_telefono` varchar(55) DEFAULT NULL,
+    `contabilidad_celular` varchar(55) DEFAULT NULL,
+    `referencia_comercial_entidad1` varchar(255) DEFAULT NULL,
+    `referencia_comercial_cel1` varchar(55) DEFAULT NULL,
+    `referencia_comercial_direccion1` varchar(255) DEFAULT NULL,
+    `referencia_comercial_entidad2` varchar(255) DEFAULT NULL,
+    `referencia_comercial_cel2` varchar(55) DEFAULT NULL,
+    `referencia_comercial_direccion2` varchar(255) DEFAULT NULL,
+    `referencia_bancaria_entidad` varchar(255) DEFAULT NULL,
+    `referencia_bancaria_tipo` varchar(255) DEFAULT NULL,
+    `referencia_bancaria_numero` varchar(55) DEFAULT NULL,
+    `reconocimiento_publico` tinyint(1) DEFAULT NULL,
+    `reconocimiento_publico_cual` varchar(255) DEFAULT NULL,
+    `persona_expuesta` tinyint(1) DEFAULT NULL,
+    `persona_expuesta_cual` varchar(255) DEFAULT NULL,
+    `poder_publico` tinyint(1) DEFAULT NULL,
+    `poder_publico_cual` varchar(255) DEFAULT NULL,
+    `recursos_publicos` tinyint(1) DEFAULT NULL,
+    `recursos_publicos_cual` varchar(255) DEFAULT NULL,
+    `ingresos_mensuales` double DEFAULT NULL,
+    `egresos_mensuales` double DEFAULT NULL,
+    `activos` double DEFAULT NULL,
+    `pasivos` double DEFAULT NULL,
+    `otros_ingresos` double DEFAULT NULL,
+    `concepto_otros_ingresos` varchar(255) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `solicitudes_credito_clientes` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `nombre` varchar(255) DEFAULT NULL,
+    `identificacion_tipo_id` int(11) DEFAULT NULL,
+    `documento_numero` varchar(55) DEFAULT NULL,
+    `porcentaje_participacion` int(11) DEFAULT NULL,
+    `solicitud_id` int(11) DEFAULT NULL,
+    `formulario_tipo` int(11) DEFAULT NULL COMMENT '1: Socios o accionistas; 2: Beneficiarios finales de socios o accionistas iguales o superiores a 5%; 3: Personas autorizadas para brindar información',
+    `celular` varchar(55) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `solicitud_id` (`solicitud_id`),
+    CONSTRAINT `solicitudes_credito_clientes_ibfk_1` FOREIGN KEY (`solicitud_id`) REFERENCES `solicitudes_credito` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 20241003 SE cambian nombres de tablas anteriormente creadas
+RENAME TABLE solicitudes_credito TO clientes_solicitudes_credito;
+RENAME TABLE solicitudes_credito_clientes TO clientes_solicitudes_credito_detalle;
+
+-- 20241008 Campo para diferenciar solicitudes nuevas o actualizaciones
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `nueva` tinyint(1) NULL DEFAULT NULL AFTER `concepto_otros_ingresos`;
+
+-- 20241016 Campos nuevos para la solicitud del crédito
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `cantidad_vehiculos` int NULL DEFAULT 0 AFTER `nueva`;
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `preferencia_enlace` tinyint(1) NULL COMMENT '1: Whatsapp; 2: Email' AFTER `cantidad_vehiculos`;
+
+CREATE TABLE `api_tokens` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `user_id` INT(11) NOT NULL,
+    `key` VARCHAR(40) NOT NULL,
+    `level` INT(2) NOT NULL,
+    `ignore_limits` TINYINT(1) NOT NULL DEFAULT '0',
+    `is_private_key` TINYINT(1)  NOT NULL DEFAULT '0',
+    `ip_addresses` TEXT NULL DEFAULT NULL,
+    `date_created` INT(11) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `api_logs` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `uri` VARCHAR(255) NOT NULL,
+    `method` VARCHAR(6) NOT NULL,
+    `params` TEXT DEFAULT NULL,
+    `api_key` VARCHAR(40) NOT NULL,
+    `ip_address` VARCHAR(45) NOT NULL,
+    `time` INT(11) NOT NULL,
+    `rtime` FLOAT DEFAULT NULL,
+    `authorized` VARCHAR(1) NOT NULL,
+    `response_code` smallint(3) DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 20250116 Se agrega nuevo campo en tabla de recibos
+ALTER TABLE `recibos` ADD COLUMN `fecha_actualizacion_bot` datetime(0) NULL AFTER `numero_siesa`;
+
+-- 20250125 Logs agregados
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (55, 'Ingresa a contacto por Whatsapp')
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (56, 'Otras transacciones de Wompi - Acceso al webhook')
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (57, 'Webhook - Recibo de Wompi almacenado correctamente')
+
+-- 20250125 Tipo de recibo agregado
+INSERT INTO `recibos_tipos` (`id`, `nombre`) VALUES (4, 'Otras transacciones Wompi')
+
+-- 20250208 Rol agregado
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (7, 'configuracion_comprobantes_ver', 'Ver comprobantes subidos', 2)
+INSERT INTO `perfiles_roles` (`fecha_creacion`, `rol_id`, `perfil_id`, `usuario_id`) VALUES ('2025-02-08 16:04:00', 7, 1, 8408)
+INSERT INTO `perfiles_roles` (`fecha_creacion`, `rol_id`, `perfil_id`, `usuario_id`) VALUES ('2025-02-08 16:04:00', 7, 2, 8408)
+
+-- 20250208 Log agregado
+INSERT INTO `logs_tipos` (`id`,`nombre`) VALUES (58, 'Clientes - Búsqueda de cliente en menú Comprobantes')
+INSERT INTO `logs_tipos` (`id`,`nombre`) VALUES (59, 'Clientes - Cliente no encontrado en menú Comprobantes')
+
+-- 20250217 Campos para datos del recibo cuando es comprobante
+ALTER TABLE `recibos` ADD COLUMN `cuenta_bancaria_id` int NULL AFTER `numero_siesa`;
+ALTER TABLE `recibos` ADD COLUMN `fecha_consignacion` date NULL AFTER `numero_siesa`;
+ALTER TABLE `recibos` ADD COLUMN `archivo_soporte` varchar(255) NULL AFTER `cuenta_bancaria_id`;
+
+-- 20250126 Se agregan nuevos campos en las solicitudes de crédito
+ALTER TABLE `clientes_solicitudes_credito` 
+    ADD COLUMN `nombre` varchar(100) NULL AFTER `fecha_creacion`,
+    CHANGE COLUMN `nombre` `razon_social` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL AFTER `fecha_creacion`,
+    ADD COLUMN `primer_apellido` varchar(55) NULL AFTER `nombre`,
+    ADD COLUMN `segundo_apellido` varchar(55) NULL AFTER `primer_apellido`;
+    ADD COLUMN `departamento_id` int NULL AFTER `documento_numero`,
+    ADD COLUMN `ciudad_id` int NULL AFTER `departamento_id`,
+    ADD COLUMN `fecha_expedicion` date NULL AFTER `fecha_creacion`,
+    ADD COLUMN `representante_legal_correo` varchar(255) NULL AFTER `representante_legal_documento_numero`,
+    MODIFY COLUMN `fecha_expedicion` date NULL DEFAULT NULL AFTER `documento_numero`,
+    ADD COLUMN `tercero_vendedor_id` int NULL AFTER `preferencia_enlace`;
+
+-- 20250412 Se agrega log para los comprobantes eliminados
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (60, 'Recibos - Comprobante eliminado');
+
+-- 20250421 Estado de recibos agregado
+INSERT INTO `recibos_estados` (`id`, `nombre`, `clase`, `orden`) VALUES (5, 'Procesado con errores', 'warning', 5);
+
+-- 20250424 Campo agregado para el estado de cuenta del cliente
+ALTER TABLE `clientes_facturas` ADD COLUMN `Nro_cuota` int NULL;
+
+-- 20240424 Campo para almacenar el número de cuota en el detalle del recibo
+ALTER TABLE `recibos_detalle` ADD COLUMN `cuota_numero` int NULL AFTER `descuento`;
+
+-- 20250424 Campo para almacenar el centro operativo
+ALTER TABLE `recibos_detalle` ADD COLUMN `centro_operativo` varchar(255) NULL AFTER `subtotal_lista_sucursal`;
+
+-- 20250424 Campo para almacenar el valor inicial de la factura
+ALTER TABLE `recibos_detalle` ADD COLUMN `valor_inicial` double NULL DEFAULT NULL AFTER `unidad_inventario`;
+
+-- 20250507 Modificación en campos
+ALTER TABLE `recibos_detalle` 
+    DROP COLUMN `valor_inicial`,
+    DROP COLUMN `precio_lista_sucursal`,
+    DROP COLUMN `subtotal_lista_sucursal`,
+    ADD COLUMN `valor_saldo_inicial` double NULL COMMENT 'clientes_facturas.totalCop' AFTER `centro_operativo`,
+    ADD COLUMN `valor_abonos` double NULL COMMENT 'clientes_facturas.valorDoc' AFTER `valor_saldo_inicial`,
+    ADD COLUMN `valor_factura` double NULL COMMENT 'clientes_facturas.valorAplicado' AFTER `valor_abonos`;
+
+-- 20250514 Campo agregado
+ALTER TABLE `recibos` ADD COLUMN `referencia` varchar(50) NULL AFTER `cuenta_bancaria_id`;
+
+-- 20250520 Campo agregado para almacenar la diferencia de valores entre el pagado y el consignado
+ALTER TABLE `recibos` ADD COLUMN `valor_pagado_mayor` double NULL DEFAULT 0 AFTER `fecha_actualizacion_bot`;
+
+-- 20250521 Campo agregado
+ALTER TABLE `recibos_detalle` ADD COLUMN `documento_cruce_fecha` date NULL AFTER `cuota_numero`;
+
+-- 20250611 Se agregan tablas para las cotizaciones de productos
+CREATE TABLE `cotizaciones_solicitudes` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `fecha_creacion` datetime DEFAULT NULL,
+    `usuario_id` int(11) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `cotizaciones_detalle` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `cotizacion_id` int(11) DEFAULT NULL,
+    `producto_id` int(11) DEFAULT NULL,
+    `cantidad` double DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `cotizacion_id` (`cotizacion_id`),
+    CONSTRAINT `cotizaciones_detalle_ibfk_1` FOREIGN KEY (`cotizacion_id`) REFERENCES `cotizaciones_solicitudes` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 20250613 Nombre de tabla modificado
+RENAME TABLE cotizaciones_solicitudes TO proveedores_cotizaciones_solicitudes;
+RENAME TABLE cotizaciones_detalle TO proveedores_cotizaciones_solicitudes_detalle;
+
+-- 20250613 Relación de las marcas y proveedores
+CREATE TABLE `proveedores_marcas`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `proveedor_nit` varchar(100) NULL,
+  `marca_codigo` varchar(255) NULL,
+  `fecha_creacion` datetime(0) NULL DEFAULT NULL,
+  `usuario_id` int NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+ALTER TABLE `proveedores_cotizaciones_solicitudes_detalle` ADD COLUMN `precio` double NULL AFTER `cantidad`;
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (14, 'configuracion_proveedores_ver', 'Ver módulo', 2);
+
+-- 20250620 Campos creados para saber cuánto tiempo estará disponible la cotización
+ALTER TABLE `proveedores_cotizaciones_solicitudes` 
+ADD COLUMN `fecha_inicio` date NULL AFTER `usuario_id`,
+ADD COLUMN `fecha_fin` date NULL AFTER `fecha_inicio`;
+
+-- 20250620
+ALTER TABLE `proveedores_cotizaciones_solicitudes_detalle` DROP COLUMN `precio`;
+
+-- 20250620
+CREATE TABLE `proveedores_cotizaciones_detalle` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cotizacion_id` int(11) DEFAULT NULL,
+  `producto_id` int(11) DEFAULT NULL,
+  `proveedor_nit` varchar(100) DEFAULT NULL,
+  `precio` double DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 20250627 Campos para logs
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (61, 'Proveedores - Matriz de precios (Generación en Excel)')
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (62, 'Proveedores - Consulta de cotizaciones (contacto no encontrado)')
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (63, 'Proveedores - Envío exitoso de cotización')
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (64, 'Proveedores - Actualización exitosa de cotización')
+
+-- 20250630 Campo para la observación del precio indicado en la cotización
+ALTER TABLE `proveedores_cotizaciones_detalle` ADD COLUMN `observacion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL AFTER `precio`;
+
+-- 20250630 Tipos de logs
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (65, 'Proveedores - Consulta exitosa de cotizaciones');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (66, 'Proveedores - Creación de solicitud de precio');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (67, 'Proveedores - Actualización de solicitud de precio');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (68, 'Proveedores - Creación de maestro');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (69, 'Proveedores - Actualización de maestro');
+
+-- 20250719 A campos de fecha se les agrega hora
+ALTER TABLE `proveedores_cotizaciones_solicitudes` 
+MODIFY COLUMN `fecha_inicio` datetime NULL DEFAULT NULL AFTER `usuario_id`,
+MODIFY COLUMN `fecha_fin` datetime NULL DEFAULT NULL AFTER `fecha_inicio`;
+
+-- 20250719 Campos para almacenar el descuento de las cotizaciones de los proveedores
+ALTER TABLE `proveedores_cotizaciones_detalle` 
+ADD COLUMN `descuento_porcentaje` double NULL AFTER `precio`,
+ADD COLUMN `precio_final` double NULL AFTER `observacion`,
+ADD COLUMN `descuento_valor` double NULL AFTER `descuento_porcentaje`;
+
+-- 20250826 Tipo de log para descarga de orden de compra en Excel
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (70, 'Proveedores - Orden de compra (Generación en Excel)');
+
+-- 20250830 Campo para almacenar comentarios del usuario logueado en los recibos con comprobantes
+ALTER TABLE `recibos` ADD COLUMN `observaciones` varchar(255) NULL AFTER `comentarios`;
+
+-- 20250831 Campo para almacenar el módulo del contacto
+ALTER TABLE `terceros_contactos` ADD COLUMN `modulo_id` int NULL DEFAULT 2 AFTER `email`;
+
+-- 20250908 Valor por defecto en el número de cuota de la factura de un recibo
+ALTER TABLE `recibos_detalle` MODIFY COLUMN `cuota_numero` int NULL DEFAULT 0 AFTER `descuento`;
+
+-- 20250910 Campo para almacenar el id del usuario en la solicitud de crédito
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `usuario_id` int NULL AFTER `observaciones`;
+
+-- 20250908 Tabla de estados para las solicitudes de crédito
+CREATE TABLE `clientes_solicitudes_credito_estados`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- 20250908 Almacenamiento del estado de la solicitud de crédito
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `solicitud_credito_estado_id` int NULL AFTER `tercero_vendedor_id`;
+
+-- 20250909 Almacenamiento dedatos adicionales a la solicitud de crédito
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `usuario_asignado_id` int NULL DEFAULT NULL COMMENT 'Usuario asignado para revisar la solicitud' AFTER `solicitud_credito_estado_id`;
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `motivo_rechazo_id` int NULL AFTER `usuario_asignado_id`;
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `observaciones` varchar(255) NULL AFTER `motivo_rechazo_id`;
+
+-- 20250909 Campo para diferenciar los motivos de rechazo a qué interfaz pertenecen
+ALTER TABLE `motivos_rechazo` ADD COLUMN `interfaz_id` int NULL DEFAULT 1 COMMENT '1: Pago con comprobantes; 2: Solicitudes de crédito' AFTER `nombre`;
+
+-- 20250914 Se agrega campo para indicar fecha de envío de la firma para solicitudes de crédito
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `fecha_envio_firma` datetime(0) NULL AFTER `usuario_id`;
+
+-- 20250915 Tipo de log para recibir eventos de un envío
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (71, 'Webhook - Evento de un envío (Roa Transportes) recibido')
+
+-- 20250915 Campos adicionales para las solicitudes de crédito
+ALTER TABLE `clientes_solicitudes_credito_estados` ADD COLUMN `clase` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `nombre`;
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `fecha_cierre` datetime(0) NULL DEFAULT NULL AFTER `fecha_envio_firma`;
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `cupo_asignado` double NULL DEFAULT 0 AFTER `fecha_cierre`;
+
+-- 20250908 Valor por defecto en el número de cuota de la factura de un recibo
+ALTER TABLE `recibos_detalle` MODIFY COLUMN `cuota_numero` int NULL DEFAULT 0 AFTER `descuento`;
+
+-- 20250918 Nuevos tipos de logs
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (72, 'WMS - Pedidos (Ejecución de script erróneo)');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (73, 'WMS - Pedidos (Ejecución de script exitoso)');
+
+CREATE TABLE `wms_pedidos`  (
+  `FechaDocumento` date NULL,
+  `NumeroDocumento` varchar(20) NULL,
+  `NIT` varchar(50) NULL,
+  `RazonSocial` varchar(255) NULL,
+  `Bodega` varchar(10) NULL,
+  `CodProducto` int NULL,
+  `CantPedida` double NULL,
+  `CantidadPendiente` double NULL,
+  `PorcentajeIva` double NULL,
+  `PorcentajeDescuento` double NULL,
+  `FechaIngresoDocumento` date NULL,
+  `HoraIngresoDocumento` time(0) NULL,
+  `IdConsecutivo` int NULL,
+  `NombreConsecutivo` varchar(100) NULL,
+  `FechaCreacion` datetime(0) NULL COMMENT 'Fecha de creación del registro'
+);
+
+ALTER TABLE `wms_pedidos` MODIFY COLUMN `FechaCreacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro' AFTER `NombreConsecutivo`;
+
+-- 20250920 Tabla para almacenar las cuentas por cobrar de los terceros
+CREATE TABLE `api_cuentas_por_pagar`  (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `f353_rowid` int NULL,
+    `f353_id_cia` varchar(5) NULL,
+    `f353_id_co_cruce` varchar(5) NULL,
+    `f353_id_tipo_docto_cruce` int NULL,
+    `f353_consec_docto_cruce` int NULL,
+    `f350_id_periodo` varchar(10) NULL,
+    `f202_id_sucursal` varchar(5) NULL,
+    `f253_id` int NULL,
+    `f353_total_cr` double NULL,
+    `f353_total_db` double NULL,
+    `f353_notas` text NULL,
+    `f353_id_un_cruce` varchar(5) NULL,
+    `f253_ind_sa` int NULL,
+    `fecha_creacion` varchar(255) NULL,
+    PRIMARY KEY (`id`)
+);
+
+-- 20250920 Se agrega tabla para la bitacora de las solicitudes de crédito
+CREATE TABLE `clientes_solicitudes_credito_bitacora` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `solicitud_id` int(11) DEFAULT NULL,
+  `observaciones` text DEFAULT NULL,
+  `usuario_id` int(11) DEFAULT NULL,
+  `fecha_creacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `solicitud_id` (`solicitud_id`),
+  CONSTRAINT `clientes_solicitudes_credito_bitacora_ibfk_1` FOREIGN KEY (`solicitud_id`) REFERENCES `clientes_solicitudes_credito` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 20250920 Campo para crear la firma
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `fecha_firma` datetime(0) NULL AFTER `fecha_envio_firma`;
+
+-- 20250921 Se modifican campos de la tabla api cuentas por pagar
+ALTER TABLE `api_cuentas_por_pagar`
+ADD COLUMN `f353_nro_cuota_cruce` int NULL AFTER `f350_id_periodo`,
+ADD COLUMN `f353_fecha` date NULL AFTER `f353_nro_cuota_cruce`,
+ADD COLUMN `f353_fecha_cancelacion` date NULL AFTER `f353_fecha`,
+ADD COLUMN `f353_fecha_vcto` date NULL AFTER `f353_fecha_cancelacion`,
+ADD COLUMN `f353_fecha_dscto_pp` date NULL AFTER `f353_fecha_vcto`,
+ADD COLUMN `f200_id` varchar(20) NULL AFTER `f353_fecha_dscto_pp`,
+MODIFY COLUMN `fecha_creacion` datetime(0) NULL DEFAULT NULL AFTER `f253_ind_sa`;
+
+-- 20250921 Se agregan logs
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (74, 'Cuentas por pagar - Ejecución de script erróneo');
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (75, 'Cuentas por pagar - Ejecución de script exitoso');
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (76, 'Cuentas por pagar - Ejecución exitosa del webhook para importar los datos');
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (77, 'Cuentas por pagar - Ocurrió un error ejecutando webhook para importar los datos');
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (78, 'Cuentas por pagar - Consulta de cuentas por pagar');
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (79, 'Cuentas por pagar - Consulta de cuentas por pagar (tercero no encontrado)');
+
+-- 20250922 La fecha de creación es la estampa de fecha
+ALTER TABLE `api_cuentas_por_pagar` MODIFY COLUMN `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP AFTER `f253_ind_sa`;
+
+-- 20250922 Creación de nuevos tipos de logs
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (80, 'Tercero - Error en la creación del registro al aprobar crédito');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (81, 'Tercero - Creación exitosa del registro al aprobar crédito');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (82, 'Tercero - Error en la creación desde el formulario de registro');
+
+-- 20250922 Tabla para almacenar el tracking de los pedidos
+CREATE TABLE `wms_pedidos_tracking`  (
+    `Id` int NOT NULL,
+    `IdConsecutivo` int NULL,
+    `NroDcto` varchar(20) NULL,
+    `OrdenExterna` varchar(50) NULL,
+    `Estado` varchar(100) NULL,
+    `Observaciones` text NULL,
+    `Fecha` datetime(0) NULL,
+    `IdUsuario` int NULL,
+    PRIMARY KEY (`Id`)
+);
+
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (83, 'WMS - Tracking de pedidos (Ejecución de script exitoso)');
+
+-- 20250927 Ajustes para que el proveedor vea sus facturas
+INSERT INTO `perfiles` (`id`, `activo`, `es_administrador`, `descripcion`, `nombre`, `usuario_id`, `token`) VALUES (6, 1, 0, 'Proveedor', 'Proveedor', 1, 'rt8Pr0vd00f');
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (15, 'proveedores_ver_facturas', 'Ver facturas', 6);
+INSERT INTO `perfiles_roles` (`fecha_creacion`, `rol_id`, `perfil_id`, `usuario_id`) VALUES ('2025-09-27 13:08:37', 15, 6, 8408);
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (84, 'Proveedores - Comprobante de Egreso (Generación en Excel)');
+
+-- 20290929 Nuevos logs
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (85, 'Proveedores - Ejecución de script erróneo de movimientos contables');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (86, 'Proveedores - Ejecución de script exitoso de movimientos contables');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (87, 'Proveedores - Consulta exitosa de movimientos de una factura');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (88, 'Proveedores - Ocurrió un error consultando los movimientos de una factura');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (89, 'Proveedores - Consulta de movimientos de una factura (tercero no encontrado)');
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (90, 'Proveedores - Certificado de retenciones (Generación en PDF)');
+
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `token` varchar(10) NULL AFTER `cupo_asignado`;
+ALTER TABLE `clientes_solicitudes_credito` ADD UNIQUE INDEX `documento_numero`(`documento_numero`, `token`) USING BTREE;
+
+-- 20251008 Campo para almacenar el vendedor
+ALTER TABLE `recibos` ADD COLUMN `tercero_vendedor_nit` varchar(55) NULL AFTER `valor_pagado_mayor`;
+
+-- 20251004
+ALTER TABLE `centros_operacion` ADD COLUMN `ruta` varchar(50) NULL AFTER `estado`;
+
+-- 20251013 Campos para la asignación automática de una solicitud de crédito
+ALTER TABLE `usuarios` ADD COLUMN `esta_disponible` tinyint(1) NULL DEFAULT 0 COMMENT 'Marca si está disponible para que se le asignen solicitudes de crédito' AFTER `celular`;
+ALTER TABLE `usuarios` ADD COLUMN `fecha_ultima_actividad` datetime(0) NULL COMMENT 'Fecha de la última actividad del usuario' AFTER `esta_disponible`;
+ALTER TABLE `usuarios` ADD COLUMN `solicitudes_atendidas` int NULL DEFAULT 0 COMMENT 'Cantidad de solicitudes de crédito atendidas por el usuario' AFTER `fecha_ultima_actividad`;
+ALTER TABLE `clientes_solicitudes_credito` ADD COLUMN `usuario_asignado_automaticamente` tinyint(1) NULL DEFAULT 0 COMMENT '0: No; 1: Sí;' AFTER `usuario_asignado_id`;
+
+INSERT INTO `modulos` (`id`, `nombre`, `descripcion`) VALUES (8, 'clientes', 'Clientes');
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (17, 'clientes_asignacion_automatica_solicitudes_credito', 'Asignación automática de solicitudes de crédito', 8);
+
+-- 20251018 
+ALTER TABLE `motivos_rechazo` MODIFY COLUMN `interfaz_id` int NULL DEFAULT 1 COMMENT '1: Pago con comprobantes; 2: Solicitudes de crédito; 3: Garantías' AFTER `nombre`;
+
+-- 20260107 Se agrega tabla para marketing campañas
+CREATE TABLE `marketing_campanias`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `fecha_creacion` datetime(0) NULL,
+  `usuario_id` int NULL,
+  `fecha_inicio` date NULL,
+  `fecha_finalizacion` date NULL,
+  `nombre` varchar(100) NULL,
+  `descripcion` varchar(255) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- 20260107 Se agrega tabla para marketing campañas contactos
+CREATE TABLE `marketing_campanias_contactos`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `campania_id` int NULL,
+  `telefono` varchar(75) NULL,
+  `nit` varchar(255) NULL,
+  `fecha_envio` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- 20260108 Nuevos registros para roles y accesos
+INSERT INTO `modulos` (`id`, `nombre`, `descripcion`, `aplica_importacion_contactos`) VALUES (9, 'comercial', 'Comercial', 1);
+INSERT INTO `modulos` (`id`, `nombre`, `descripcion`, `aplica_importacion_contactos`) VALUES (10, 'marketing', 'Marketing', 1);
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (18, 'comercial_ventas_ver', 'Ver ventas', 9);
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (19, 'marketing_ver', 'Ver módulo', 10);
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (20, 'marketing_campanias_ver', 'Ver campañas de marketing', 10);
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (21, 'marketing_campanias_gestionar', 'Gestionar campañas de marketing', 10);
+
+-- 20260108 Se agrega relación entre las tablas marketing_campanias y marketing_casmpanias_contactos
+ALTER TABLE `marketing_campanias_contactos` 
+ADD CONSTRAINT `marketing_campanias_contactos_ibfk_1` FOREIGN KEY (`campania_id`) REFERENCES `ecommerce`.`marketing_campanias` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- 20260108 Se agrega campo de fecha de creación en la tabla marketing_ca,panias_contactos
+ALTER TABLE `marketing_campanias_contactos` 
+ADD COLUMN `fecha_creacion` datetime(0) NULL AFTER `id`;
+
+-- 20260112 Se configura tabla marketing_campañas para recibir emojis en los campos
+ALTER TABLE `marketing_campanias`
+CONVERT TO CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+-- 20260112 Se agregan campos en la tabla marketing_campanias
+ALTER TABLE `marketing_campanias` 
+ADD COLUMN `nombre_plantilla_whatsapp` TEXT NULL AFTER `descripcion`,
+ADD COLUMN `mensaje` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL AFTER `nombre_plantilla_whatsapp`;
+
+-- 20260113 Log para mensajes recibidos desde Whatsapp
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (102, 'Webhooks - Mensaje de Whatsapp recibido')
+
+-- 20260113 Campo eliminado
+ALTER TABLE `marketing_campanias` DROP COLUMN `mensaje`;
+
+-- 20260114 Rol agregado
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (22, 'inicio_ver_dashboard_credito', 'Ver dashboard para venta a crédito', 1)
+
+-- 20260115 Se crea tabla para almacenar información para informes de las retenciones de los clientes
+CREATE TABLE `clientes_informe_retenciones`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `anio` year NULL,
+  `nit` varchar(100) NULL COMMENT 'Nit del tercero',
+  `razon_social` varchar(255) NULL,
+  `vendedor` varchar(255) NULL,
+  `valor_retencion_fuente` double NULL,
+  `valor_retencion_iva` double NULL,
+  `valor_retencion_ica` double NULL,
+  `fecha_creacion` datetime(0) NULL,
+  `fecha_actualizacion` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- 20260115 Se agrega tipo de log para la importación de la información de la retencion de los clientes
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (103, 'Webhook - Importación informe de retenciones de clientes')
+
+-- 20260116 Se ajusta nombre de la tabla clientes_informe_retenciones por clientes_retenciones_informe
+RENAME TABLE clientes_informe_retenciones TO clientes_retenciones_informe;
+
+CREATE TABLE importaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    numero_orden_compra VARCHAR(50) NOT NULL,
+    razon_social VARCHAR(255),
+    pais_origen VARCHAR(100),
+    fecha_estimada_llegada DATE,
+    moneda_preferida VARCHAR(10),
+    valor_total DECIMAL(18, 2),
+    valor_trm DECIMAL(18, 2),
+    valor_total_cop DECIMAL(18, 2),
+    requiere_anticipo BOOLEAN,
+    condiciones_pago TEXT,
+    contacto_principal VARCHAR(255),
+    email_contacto VARCHAR(255),
+    telefono_contacto VARCHAR(50),
+    direccion TEXT,
+    notas_internas TEXT,
+    bl_awb VARCHAR(100),
+    impuestos_dian DECIMAL(18, 2),
+    fecha_ingreso_siesa DATE
+);
+
+ALTER TABLE importaciones
+ADD COLUMN porcentaje_anticipo DECIMAL(5,2) DEFAULT 0 COMMENT 'Porcentaje de anticipo (0-100)',
+ADD COLUMN usuario_id INT(11) NULL COMMENT 'ID del usuario que creó/modificó';
+-- Ejemplo 1: Importación de Electrónica desde China
+INSERT INTO importaciones (
+    numero_orden_compra,
+    razon_social,
+    pais_origen,
+    fecha_estimada_llegada,
+    moneda_preferida,
+    valor_total,
+    valor_trm,
+    valor_total_cop,
+    requiere_anticipo,
+    condiciones_pago,
+    contacto_principal,
+    email_contacto,
+    telefono_contacto,
+    direccion,
+    notas_internas,
+    bl_awb,
+    impuestos_dian,
+    fecha_ingreso_siesa
+) VALUES (
+    'ORD-2026-001',           -- numero_orden_compra
+    'Shenzhen Tech Solutions',-- razon_social
+    'China',                  -- pais_origen
+    '2026-03-15',             -- fecha_estimada_llegada
+    'USD',                    -- moneda_preferida
+    15000.00,                 -- valor_total
+    4100.50,                  -- valor_trm
+    61507500.00,              -- valor_total_cop (15000 * 4100.50)
+    1,                        -- requiere_anticipo (1 = Sí, 0 = No)
+    '30% anticipo, 70% contra entrega BL', -- condiciones_pago
+    'Li Wei',                 -- contacto_principal
+    'sales@shenzhentech.com', -- email_contacto
+    '+86 139 0000 1234',      -- telefono_contacto
+    'No. 5 Keji Road, Nanshan District, Shenzhen', -- direccion
+    'Contenedor compartido. Revisar calidad de pantallas.', -- notas_internas
+    'COSU63829104',           -- bl_awb
+    11685000.00,              -- impuestos_dian (aprox 19%)
+    '2026-01-18'              -- fecha_ingreso_siesa
+);
+
+-- Ejemplo 2: Importación de Repuestos desde USA
+INSERT INTO importaciones (
+    numero_orden_compra,
+    razon_social,
+    pais_origen,
+    fecha_estimada_llegada,
+    moneda_preferida,
+    valor_total,
+    valor_trm,
+    valor_total_cop,
+    requiere_anticipo,
+    condiciones_pago,
+    contacto_principal,
+    email_contacto,
+    telefono_contacto,
+    direccion,
+    notas_internas,
+    bl_awb,
+    impuestos_dian,
+    fecha_ingreso_siesa
+) VALUES (
+    'ORD-2026-002',
+    'Global Auto Parts LLC',
+    'Estados Unidos',
+    '2026-02-10',
+    'USD',
+    5200.00,
+    4050.00,
+    21060000.00,
+    0,                        -- No requiere anticipo
+    'Crédito 30 días',
+    'John Smith',
+    'jsmith@globalautoparts.com',
+    '+1 305 555 7890',
+    '1200 Brickell Ave, Miami, FL 33131',
+    'Envío aéreo prioritario. Urgente para cliente VIP.',
+    'AWB-8829102',
+    4001400.00,
+    '2026-01-19'
+);
+
+ALTER TABLE importaciones 
+ADD COLUMN fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP AFTER id;
+
+ALTER TABLE importaciones 
+ADD COLUMN estado VARCHAR(50) DEFAULT 'En Tránsito' AFTER fecha_estimada_llegada;
+
+-- 20260119 Tabla para almacenar tareas de la validación del archivo digital
+CREATE TABLE `comprobantes_contables_tareas`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `comprobante_contable_tipo_id` int NULL DEFAULT NULL COMMENT 'Tipo de comprobante contable',
+  `centro_operacion_id` int NULL DEFAULT NULL COMMENT 'Sede',
+  `anio` int NULL DEFAULT NULL,
+  `mes` tinyint NULL DEFAULT NULL,
+  `consecutivo_inicial` int NULL DEFAULT NULL,
+  `consecutivo_final` int NULL DEFAULT NULL,
+  `fecha_creacion` datetime(0) NULL DEFAULT NULL,
+  `usuario_id` int NULL DEFAULT NULL,
+  `fecha_inicio_ejecucion` datetime(0) NULL,
+  `fecha_fin_ejecucion` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `comprobantes_contables_tareas_detalle`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `ruta` varchar(255) NULL,
+  `consecutivo_numero` int NULL,
+  `consecutivo_existe` tinyint(1) NULL,
+  `comprobante_existe` tinyint(1) NULL,
+  `comprobante_coincide` tinyint NULL,
+  `cantidad_soportes` int NULL,
+  `fecha_creacion` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`id`)
+);
+
+-- 20260121 Campo aregado
+ALTER TABLE `comprobantes_contables_tareas_detalle` ADD COLUMN `comprobante_contable_tarea_id` int NULL AFTER `id`;
+
+-- 20260121 Tablas eliminadas
+DROP TABLE comprobantes_contables_validacion;
+DROP TABLE comprobantes_contables_validacion_detalle;
+
+-- Creación de la tabla clientes_retenciones_detalle
+CREATE TABLE `clientes_retenciones_detalle`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `anio` year(4) NULL,
+  `monto` double NULL,
+  `nit` varchar(100) NULL,
+  `observacion` text NULL,
+  `tipo_retencion` varchar(100) NULL,
+  `fecha_creacion` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- Para agregar la relación entre las tablas clientes_retenciones_informe y clientes_retenciones_detalle
+-- Primero agregar el índice único en la tabla padre (clientes_retenciones_informe) en los campos que se van a referenciar en la llave foránea
+  ALTER TABLE clientes_retenciones_informe ADD UNIQUE KEY idx_nit_anio (nit, anio);
+
+-- Segundo crear la clave foránea en la tabla hija (clientes_retenciones_detalle)
+ALTER TABLE `clientes_retenciones_detalle`
+ADD CONSTRAINT `clientes_retenciones_detalle_ibfk_1`
+FOREIGN KEY (`nit`, `anio`) 
+REFERENCES `clientes_retenciones_informe`(`nit`, `anio`);
+
+-- 20260122 Campo para almacenar el nombre de la imagen de la campaña
+ALTER TABLE `marketing_campanias` ADD COLUMN `nombre_imagen` varchar(255) NULL AFTER `nombre_plantilla_whatsapp`;
+
+-- Se agregan logs para el módulo de marketing - campañas
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (104, 'Marketing - Creación de campaña');
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (105, 'Marketing - Edición de campaña');
+
+-- Se agrega log para el excel de proveedores maestro de marcas
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (106, 'Reportes - Se generó el excel: Proveedores maestro de marcas');
+
+-- Se agrega campo de fecha de envio para controlar el envio masivo de la notificación
+ALTER TABLE `clientes_retenciones_informe` 
+ADD COLUMN `fecha_envio` datetime(0) NULL AFTER `fecha_actualizacion`;
+
+-- Log para controlar la información de envio de la notificacion masiva de llos certificados 
+INSERT INTO `logs_tipos`(`id`, `nombre`) VALUES (107, 'Webhook - Envío de notificación email para subida de certificados de retenciones habilitada');
+
+-- 20260122 Tabla para los pagos las importaciones
+CREATE TABLE importaciones_pagos  (
+    id int NOT NULL AUTO_INCREMENT,
+    importacion_id int NULL,
+    estado_id tinyint(1) NULL DEFAULT 0 COMMENT '0: Pagado; 1: Pendiente por pagar',
+    fecha varchar(255) NULL COMMENT 'Fecha del pago',
+    observaciones varchar(255) NULL,
+    factura_numero varchar(50) NULL,
+    valor_moneda_extranjera double NULL,
+    valor_trm double NULL COMMENT 'Valor de TRM al momento',
+    valor_cop double NULL COMMENT 'Monto del pago',
+    origen_recursos tinyint(1) NULL COMMENT '1: Recursos propios',
+    cuenta_bancaria_id int NULL COMMENT 'Tabla cuentas_bancarias',
+    fecha_creacion datetime(0) NULL,
+    usuario_id int NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE `importaciones_pagos_origen_recursos`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(255) NULL,
+  `fecha_creacion` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+ALTER TABLE `importaciones_pagos` 
+CHANGE COLUMN `origen_recursos` `origen_recursos_id` int(11) NULL DEFAULT NULL COMMENT '1: Recursos propios' AFTER `valor_cop`;
+
+ALTER TABLE `importaciones_pagos` 
+ADD CONSTRAINT `importaciones_pagos_ibfk_1` FOREIGN KEY (`origen_recursos_id`) REFERENCES `importaciones_pagos_origen_recursos` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+CREATE TABLE importaciones_maestro_anticipos (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  nit VARCHAR(50) NOT NULL COMMENT 'NIT o Identificación del proveedor',
+  proveedor VARCHAR(255) NOT NULL COMMENT 'Nombre o Razón Social',
+  porcentaje DECIMAL(5,2) DEFAULT 0 COMMENT 'Porcentaje fijo de anticipo (ej: 30.00)',
+  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_nit (nit)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO importaciones_maestro_anticipos (nit, proveedor, porcentaje) VALUES 
+('900123456-1', 'Proveedor Tecnológico China Ltd', 30.00),
+('811000222-5', 'Logística Global USA', 50.00);
+
+ALTER TABLE importaciones 
+ADD COLUMN usuario_id INT(11) NULL COMMENT 'ID del usuario que registró la importación',
+ADD CONSTRAINT fk_importaciones_usuario 
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) 
+    ON DELETE SET NULL ON UPDATE CASCADE;
+
+
+ALTER TABLE importaciones_maestro_anticipos 
+DROP COLUMN proveedor;
+
+-- 20260126 Se crea tabla para los tipos de banners
+CREATE TABLE `banners_tipos`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(255) NULL,
+  `fecha_creacion` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- 20260126 Tabla para los estados de las importaciones
+CREATE TABLE `importaciones_estados`  (
+  `id` int NOT NULL,
+  `nombre` varchar(100) NULL,
+  `fecha_creacion` datetime(0) NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- Los estados de las importaciones se cargan desde una tabla
+ALTER TABLE `importaciones` CHANGE COLUMN `estado` `importacion_estado_id` int NULL DEFAULT 1 AFTER `fecha_estimada_llegada`;
+
+-- Nuevos campos
+ALTER TABLE `importaciones_estados` 
+ADD COLUMN `orden` int NULL DEFAULT NULL COMMENT 'Orden en que se van a mostrar' AFTER `nombre`,
+ADD COLUMN `clase` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Clase para definir el color del estado' AFTER `orden`,
+MODIFY COLUMN `clase` varchar(25) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Clase para definir el color del estado' AFTER `orden`,
+MODIFY COLUMN `fecha_creacion` datetime NULL DEFAULT NULL AFTER `nombre`;
+
+-- 20260127 Se ajusta nombre de la tabla banners_tipos por marketing_baners_tipos
+RENAME TABLE banners_tipos TO marketing_banners_tipos;
+
+-- 20260127 Se agregan los valores de los tipos de banners
+INSERT INTO `marketing_banners_tipos` (`id`, `nombre`, `fecha_creacion`) VALUES (1, 'Sesión - Login', NOW());
+INSERT INTO `marketing_banners_tipos` (`id`, `nombre`, `fecha_creacion`) VALUES (2, 'Inicio - Dashboard de clientes crédito', NOW());
+INSERT INTO `marketing_banners_tipos` (`id`, `nombre`, `fecha_creacion`) VALUES (3, 'Inicio - Marcas', NOW());
+INSERT INTO `marketing_banners_tipos` (`id`, `nombre`, `fecha_creacion`) VALUES (4, 'Inicio - Grupos', NOW());
+INSERT INTO `marketing_banners_tipos` (`id`, `nombre`, `fecha_creacion`) VALUES (5, 'Inicio - Líneas', NOW());
+
+CREATE TABLE `marketing_banners`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `banner_tipo_id` int NULL,
+  `fecha_creacion` datetime(0) NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `marketing_banners_ibfk_1` FOREIGN KEY (`banner_tipo_id`) REFERENCES `ecommerce`.`marketing_banners_tipos` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+-- Campo para almacenar el NIT
+ALTER TABLE `importaciones` ADD COLUMN `nit` varchar(100) NULL AFTER `numero_orden_compra`;
+
+-- 20260128 Rol creado
+INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (23, 'pedidos_credito_gestionar', 'Activo para pedidos a crédito', 4);
+
+-- 20260201 Se agrega campo para guardar el nombre del archivo en los banners
+ALTER TABLE `marketing_banners` 
+ADD COLUMN `nombre_archivo` varchar(255) NULL AFTER `banner_tipo_id`;
+-- Nuevos campos
+ALTER TABLE `recibos_detalle`  ADD COLUMN `lista_precio` varchar(5) NULL COMMENT 'Lista de precio para ventas a crédito' AFTER `valor_factura`;
+ALTER TABLE `recibos` ADD COLUMN `tipo_cliente` varchar(5) NULL AFTER `tercero_vendedor_nit`;
+
+-- 20260130 Relaciones creadas
+ALTER TABLE `comprobantes_contables_tareas_detalle` ADD FOREIGN KEY (`comprobante_contable_tarea_id`) REFERENCES `comprobantes_contables_tareas` (`id`) ON DELETE RESTRICT;
+ALTER TABLE `comprobantes_contables_tareas` ADD FOREIGN KEY (`comprobante_contable_tipo_id`) REFERENCES `comprobantes_contables_tipos` (`id`) ON DELETE RESTRICT;
+
+
+CREATE TABLE importaciones_bitacora (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    importacion_id INT(11) DEFAULT NULL,
+    observaciones TEXT DEFAULT NULL,
+    usuario_id INT(11) DEFAULT NULL,
+    fecha_creacion DATETIME DEFAULT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

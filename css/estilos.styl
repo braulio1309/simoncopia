@@ -1,0 +1,161 @@
+// Colores corporativos
+azul_corporativo_primario = #19287F
+amarillo_corporativo_primario = #FFD400
+rojo_corporativo_secundario = #FF1B1C
+azul_claro_corporativo_secundario = #8D9EBC
+amarillo_corporativo_apoyo = #F8A815
+azul_corporativo_apoyo = #1F2B50
+
+@font-face
+    font-family Futura
+    src url('../fonts/futura/Futura Std Book.ttf')
+
+body
+    font-family Futura, Roboto
+
+.color_azul_corporativo_primario
+    color azul_corporativo_primario
+
+.badge_formulario
+    font-size 1.3em
+    height 1.3em
+
+.block-features__item-title
+    color azul_corporativo_primario
+    font-weight 800
+
+.block-zone__card
+    cursor pointer
+
+// Título de la sección de marcas en el menú principal
+.departments__button
+    width 245px
+
+.dropcart__item-name>a:hover
+    color azul_corporativo_primario
+
+.btn_whatsapp
+    position fixed
+    bottom 20px
+    right 20px
+    background-color #25d366
+    color white
+    border none
+    border-radius 50%
+    width 60px
+    height 60px
+    box-shadow 0px 4px 6px rgba(0, 0, 0, 0.2)
+    display flex
+    align-items center
+    justify-content center
+    text-decoration none
+    font-size 24px
+    z-index 1000
+
+.txt_whatsapp
+    background-color #25d366
+    color white
+    padding 5px 10px
+    border-radius 5px
+    font-size 14px
+    font-family Arial, sans-serif
+    position absolute
+    right 70px
+    opacity 0
+    transition opacity 0.3s ease-in-out
+    white-space nowrap
+
+.btn_whatsapp:hover .txt_whatsapp
+    opacity: 1;
+
+.btn_whatsapp:hover
+    background-color white
+    cursor pointer
+
+// Espacio donde va el precio del carrito y nombre de sesión en el menú
+.indicator__button
+    min-width 194px
+
+// .indicator
+//     color azul_corporativo_primario
+//     font-family Futura, Roboto
+
+// .indicator:hover .indicator__button, .indicator--open .indicator__button
+//     background amarillo_corporativo_primario
+//     // height 26px
+
+// .indicator__icon
+//     // height 20px
+//     padding 0
+//     padding-left 20px
+//     width 20px
+
+.main-menu__item, .section-header__title, .block-zone__tabs
+    color azul_corporativo_primario
+    font-weight bold
+
+.main-menu .main-menu__item:hover .main-menu__link
+    background amarillo_corporativo_primario;
+    color white
+    font-weight bold
+
+.megamenu-links__item*
+    color azul_corporativo_primario
+
+// El menú crédito tiene un énfasis distinto
+.menu_enfasis
+    background amarillo_corporativo_primario;
+    color white
+
+    :hover
+        background-color azul_corporativo_primario
+
+.topbar--spaceship-start, .header__topbar-start-bg:before, .departments__button:hover
+    background azul_corporativo_primario
+
+// Submenú marcas
+.departments__item, .departments__item-link, .departments__item-arrow, .hla
+    color azul_corporativo_primario
+
+    :hover
+        background amarillo_corporativo_primario
+        color white
+
+.departments__button, .departments--open .departments__button
+    color azul_corporativo_primario
+    
+.departments__button:hover, .departments--open .departments__button
+    background amarillo_corporativo_primario
+
+// Titulos en el detalle de producto
+.product__title, .product-tabs__item, .spec__section-title, .shop-features__item-title
+    color azul_corporativo_primario
+
+.topbar--spaceship-end, .header__topbar-end-bg:before
+    background amarillo_corporativo_primario
+
+.topbar__button-label
+    color azul_claro_corporativo_secundario
+
+.topbar__button-label:hover
+    color rojo_corporativo_secundario
+
+.site__body
+    padding-top 120px
+
+@media (max-width: 1399px)
+    .site__body
+        padding-top 120px
+
+@media (max-width: 1199px)
+    .site__body
+        padding-top 5px
+
+.social-links__item--linkedin a
+    background #0A66C2
+    color white
+
+// Quitar barra horizontal superior del menú
+.header
+    grid-template-rows: 0px;
+    padding 0

@@ -1,0 +1,708 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Clientes</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="243d8ede-0907-8004-8dc3-d154e56da41d" class="page sans"><header><div class="page-header-icon undefined"><span class="icon">👥</span></div><h1 class="page-title">Clientes</h1><p class="page-description"></p></header><div class="page-body"><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="243d8ede-0907-808c-9ffa-d19b4629e230"><div style="font-size:1.5em"><span class="icon">ℹ️</span></div><div style="width:100%"><p id="243d8ede-0907-806e-b422-c65010dc5396" class="">En este módulo se pueden gestionar las interacciones con los clientes en cuanto a pagos y solicitudes de crédito</p></div></figure><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">💳 Pagos</summary><div class="indented"><hr id="271d8ede-0907-808b-bb19-caff413c3d34"/><p id="271d8ede-0907-801a-bd7b-e4f004935d73" class="">En esta sección se visualizan y gestionan los pagos realizados por los clientes desde diferentes canales.</p><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">🛒 Ventas</summary><div class="indented"><hr id="243d8ede-0907-804d-8fde-df3e11f17559"/><p id="243d8ede-0907-8018-9e80-ccb0bead060e" class="">Permite visualizar los pagos realizados por ventas en la <a href="https://www.notion.so/243d8ede0907804b8cf8cb517e9ca4be?pvs=21">tienda del eCommerce</a></p><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">📋 Ver registros</summary><div class="indented"><p id="243d8ede-0907-8013-b745-d7083bb7fc94" class="">Ingrese a <code>Ajustes / Clientes / Pagos</code> y haga clic en la pestaña <code>Ventas</code></p><table id="243d8ede-0907-8050-a65c-ee2fbc54f222" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-80db-8a44-e2cbce47b64d"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:433.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-80ed-8184-d4a539d1940a"><td id="VqRX" class="" style="width:163.5px">Fecha ingreso</td><td id="NWbX" class="" style="width:433.5px">Fecha en la que se realizó la compra</td></tr><tr id="243d8ede-0907-8078-ba70-e1ffbccc5c6c"><td id="VqRX" class="" style="width:163.5px">Hora ingreso</td><td id="NWbX" class="" style="width:433.5px">Hora en la que se realizó la compra</td></tr><tr id="243d8ede-0907-80f2-8683-fc41e5559136"><td id="VqRX" class="" style="width:163.5px">Fecha pago</td><td id="NWbX" class="" style="width:433.5px">Es la misma fecha de ingreso</td></tr><tr id="243d8ede-0907-808c-901e-ec168b3c9056"><td id="VqRX" class="" style="width:163.5px">NIT</td><td id="NWbX" class="" style="width:433.5px">Número de identificación del cliente que realizó la compra</td></tr><tr id="243d8ede-0907-80e2-82fb-c04c30454618"><td id="VqRX" class="" style="width:163.5px">Nombre</td><td id="NWbX" class="" style="width:433.5px">Nombre o razón social del cliente que realizó la compra</td></tr><tr id="243d8ede-0907-80c9-bfe1-ff744a072de1"><td id="VqRX" class="" style="width:163.5px">Forma pago</td><td id="NWbX" class="" style="width:433.5px">Forma de pago con la que se realizó la compra</td></tr><tr id="243d8ede-0907-8056-9823-d9f62af4ac4d"><td id="VqRX" class="" style="width:163.5px">Recibo Siesa</td><td id="NWbX" class="" style="width:433.5px">Número de recibo obtenido después de asentar el pago en Siesa</td></tr></tbody></table><figure id="265d8ede-0907-8019-b940-e85b2ebb0cfc" class="image"><a href="image%2030.png"><img style="width:653.96875px" src="image%2030.png"/></a></figure></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📈 Pagos cartera en línea</summary><div class="indented"><hr id="243d8ede-0907-80e8-b9ff-f7132c6fa1d0"/><p id="243d8ede-0907-80a8-96de-dcec2bbbde38" class="">Visualiza todos los pagos realizados a través del módulo de <a href="https://www.notion.so/243d8ede0907800a97a5c1776bbe6855?pvs=21">pagos en línea</a></p><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">📋 Ver registros</summary><div class="indented"><p id="243d8ede-0907-805c-89cf-dd029951f28f" class="">Ingrese a <code>Ajustes / Clientes / Pagos</code> y haga clic en la pestaña <code>Pagos cartera en línea</code></p><table id="243d8ede-0907-808f-894e-dec8703a47de" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-808f-b950-e6938aa060f3"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:437.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-8099-b1cf-d62802a7c19a"><td id="VqRX" class="" style="width:163.5px">Fecha ingreso</td><td id="NWbX" class="" style="width:437.5px">Fecha en la que se realizó el pago</td></tr><tr id="243d8ede-0907-8035-8f05-fdb7e00142bd"><td id="VqRX" class="" style="width:163.5px">Hora ingreso</td><td id="NWbX" class="" style="width:437.5px">Hora en la que se realizó el pago</td></tr><tr id="243d8ede-0907-80f3-a464-c8c4344fce62"><td id="VqRX" class="" style="width:163.5px">Fecha pago</td><td id="NWbX" class="" style="width:437.5px">Es la misma fecha de ingreso</td></tr><tr id="243d8ede-0907-8097-bb84-c7a2fcd58bbb"><td id="VqRX" class="" style="width:163.5px">NIT</td><td id="NWbX" class="" style="width:437.5px">Número de identificación del cliente que realizó el pago</td></tr><tr id="243d8ede-0907-8052-94db-c7ab09054916"><td id="VqRX" class="" style="width:163.5px">Nombre</td><td id="NWbX" class="" style="width:437.5px">Nombre o razón social del cliente que realizó el pago</td></tr><tr id="243d8ede-0907-80d2-8919-ef33e90b4be2"><td id="VqRX" class="" style="width:163.5px">Forma pago</td><td id="NWbX" class="" style="width:437.5px">Medio de pago con el que se realizó el proceso</td></tr><tr id="243d8ede-0907-80c3-baee-c1512ef213ba"><td id="VqRX" class="" style="width:163.5px">Recibo Siesa</td><td id="NWbX" class="" style="width:437.5px">Número de recibo obtenido después de asentar el pago en Siesa</td></tr><tr id="243d8ede-0907-80c3-9fd3-de1b0c7b1532"><td id="VqRX" class="" style="width:163.5px">Estado</td><td id="NWbX" class="" style="width:437.5px">Estado del pago que se realizó, entregado por Wompi</td></tr><tr id="243d8ede-0907-806a-9b2d-f643efd946e5"><td id="VqRX" class="" style="width:163.5px">Creador</td><td id="NWbX" class="" style="width:437.5px">Usuario que creó el pago (en caso de haber iniciado sesión)</td></tr><tr id="243d8ede-0907-80f2-97e2-f7c76f2df95b"><td id="VqRX" class="" style="width:163.5px">Gestionador</td><td id="NWbX" class="" style="width:437.5px">Usuario que aprueba o rechaza el pago (no aplica para pagos en línea)</td></tr><tr id="243d8ede-0907-8009-86a2-d116cb213f9a"><td id="VqRX" class="" style="width:163.5px">Valor</td><td id="NWbX" class="" style="width:437.5px">Monto del pago realizado</td></tr><tr id="243d8ede-0907-807a-80d5-fbdf66880f41"><td id="VqRX" class="" style="width:163.5px"><code>🔍</code></td><td id="NWbX" class="" style="width:437.5px"><a href="Clientes%20243d8ede090780048dc3d154e56da41d.html">Generar recibo de caja</a></td></tr></tbody></table><figure id="265d8ede-0907-80c8-9a26-e6b7e7b15c8c" class="image"><a href="image%2031.png"><img style="width:653.96875px" src="image%2031.png"/></a></figure></div></details><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">🔬 Ver detalle del pago</summary><div class="indented"><ul id="243d8ede-0907-8058-bedb-edb8ec13b594" class="bulleted-list"><li style="list-style-type:disc">Para ver el detalle de un pago, haga clic en <code>Fecha de ingreso</code></li></ul><ul id="243d8ede-0907-8013-a7ac-e12d48cf94e0" class="bulleted-list"><li style="list-style-type:disc">A continuación, ver dos opciones: <code>Resumen</code> y <code>Pago</code></li></ul><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>Resumen</strong></summary><div class="indented"><p id="243d8ede-0907-8072-9306-e4369827945c" class="">Muestra el detalle de las facturas pagadas por el usuario. Para visualizarlo haga clic en <code>Resumen</code></p><table id="243d8ede-0907-8036-9683-ebfaf6137e63" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-8004-86b2-dd16d4de8529"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:404.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-803d-a4b7-e2201887ee8d"><td id="VqRX" class="" style="width:163.5px">Sede</td><td id="NWbX" class="" style="width:404.5px">Sede de origen de la factura</td></tr><tr id="243d8ede-0907-8048-bf98-d5f31dd8c97e"><td id="VqRX" class="" style="width:163.5px">Documento cruce</td><td id="NWbX" class="" style="width:404.5px">Número de documento cruce de la factura asociado a Siesa</td></tr><tr id="243d8ede-0907-802b-a6e4-e84e2802befe"><td id="VqRX" class="" style="width:163.5px">Fecha factura</td><td id="NWbX" class="" style="width:404.5px">Fecha de generación de la factura</td></tr><tr id="243d8ede-0907-802c-95e5-e3410ad89b92"><td id="VqRX" class="" style="width:163.5px">Valor documento</td><td id="NWbX" class="" style="width:404.5px">Valor inicial de la factura</td></tr><tr id="243d8ede-0907-80a9-a646-cd4543ac9967"><td id="VqRX" class="" style="width:163.5px">Descuento</td><td id="NWbX" class="" style="width:404.5px">Valor del descuento aplicado a la factura</td></tr><tr id="243d8ede-0907-80d2-8d9c-f324182d9e72"><td id="VqRX" class="" style="width:163.5px">Valor pagado</td><td id="NWbX" class="" style="width:404.5px">Valor total que se pagó de la factura</td></tr><tr id="243d8ede-0907-8094-808c-dfd5def7905b"><td id="VqRX" class="" style="width:163.5px">Valor saldo</td><td id="NWbX" class="" style="width:404.5px">Monto restante por pagar de la factura</td></tr><tr id="243d8ede-0907-8063-883c-efdf861c3eda"><td id="VqRX" class="" style="width:163.5px">Sucursal</td><td id="NWbX" class="" style="width:404.5px">Sucursal del cliente a la que está asociada la factura en Siesa </td></tr></tbody></table><figure id="243d8ede-0907-8095-87f5-f956dc80e006" class="image"><a href="image%2032.png"><img style="width:653.96875px" src="image%2032.png"/></a></figure></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>Pago</strong></summary><div class="indented"><p id="243d8ede-0907-8013-af53-c76f2eaaa5a8" class="">Especifica el detalle del pago realizado a través de la pasarela de pagos. Para visualizarlo haga clic en <code>Pago</code></p><table id="243d8ede-0907-80a7-af1a-ff5c57924dbe" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-80cc-9853-fdd65d0ec99c"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:402.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-80d2-baa2-f5eeb2f0737c"><td id="VqRX" class="" style="width:163.5px">Identificador</td><td id="NWbX" class="" style="width:402.5px">Código único del pago en Wompi</td></tr><tr id="243d8ede-0907-8064-bddc-c4f8ad69b7f1"><td id="VqRX" class="" style="width:163.5px">Fecha de creación</td><td id="NWbX" class="" style="width:402.5px">Fecha del pago</td></tr><tr id="243d8ede-0907-80bb-9056-d4d2220ba941"><td id="VqRX" class="" style="width:163.5px">Valor</td><td id="NWbX" class="" style="width:402.5px">Monto total pagado</td></tr><tr id="243d8ede-0907-8086-b366-daaee93de5ca"><td id="VqRX" class="" style="width:163.5px">Referencia</td><td id="NWbX" class="" style="width:402.5px">Código único del pago en el eCommerce</td></tr><tr id="243d8ede-0907-8061-954b-f40687464dee"><td id="VqRX" class="" style="width:163.5px">Forma de pago</td><td id="NWbX" class="" style="width:402.5px">Medio por el cual se realizó el pago</td></tr><tr id="243d8ede-0907-805f-a50f-cf27e8dea2bd"><td id="VqRX" class="" style="width:163.5px">Estado</td><td id="NWbX" class="" style="width:402.5px">Estado del pago</td></tr></tbody></table><figure id="243d8ede-0907-80c2-bf91-d109e04ae499" class="image"><a href="image%2033.png"><img style="width:653.953125px" src="image%2033.png"/></a></figure></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">📄 Generar recibo de caja</summary><div class="indented"><p id="243d8ede-0907-8019-966f-ce12a380a388" class="">Para los pagos aprobados, podrá visualizar y descargar el recibo de caja del pago en formato PDF. Para generarlo haga clic en el ícono <code>🔍</code></p><figure id="243d8ede-0907-801c-a548-ffaafb7c2aed" class="image"><a href="image%2034.png"><img style="width:681.953125px" src="image%2034.png"/></a></figure><p id="243d8ede-0907-802e-889a-ff0df60bd97b" class="">Se abrirá una nueva pestaña con el recibo de caja que indica los detalles del pago:</p><figure id="243d8ede-0907-8063-9569-c596b53501d3" class="image"><a href="image%2035.png"><img style="width:681.96875px" src="image%2035.png"/></a></figure></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📁 Comprobantes</summary><div class="indented"><hr id="243d8ede-0907-80fb-a885-cfc0464a7683"/><p id="243d8ede-0907-8094-aad6-cccb5e08c19d" class="">En esta sección se gestionan los pagos realizados fuera del módulo de pagos en línea, donde un bot toma los datos y los procesa en Siesa</p><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">📋 Ver registros</summary><div class="indented"><p id="243d8ede-0907-80c3-a55f-dbd01d60e641" class="">Ingrese a <code>Ajustes / Clientes / Pagos</code> y haga clic en la pestaña <code>Comprobantes</code></p><table id="243d8ede-0907-804e-bc03-cfc4b700226c" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-80d3-b4b1-c0e06c6206a9"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:429.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-8054-95d1-fb55d3b0b7f0"><td id="VqRX" class="" style="width:163.5px">Fecha ingreso</td><td id="NWbX" class="" style="width:429.5px"><a href="Clientes%20243d8ede090780048dc3d154e56da41d.html">Fecha en la que se creó el registro - Ver detalle del pago</a></td></tr><tr id="243d8ede-0907-80ca-a369-d637bfdf3c3a"><td id="VqRX" class="" style="width:163.5px">Hora ingreso</td><td id="NWbX" class="" style="width:429.5px">Hora en la que se creó el registro</td></tr><tr id="243d8ede-0907-80ec-9113-d7b42fd044b6"><td id="VqRX" class="" style="width:163.5px">Fecha pago</td><td id="NWbX" class="" style="width:429.5px">Fecha en la que se realizó el pago por parte del cliente</td></tr><tr id="243d8ede-0907-804a-9329-c482186ef0de"><td id="VqRX" class="" style="width:163.5px">NIT</td><td id="NWbX" class="" style="width:429.5px">Número de identificación del cliente que realizó el pago</td></tr><tr id="243d8ede-0907-80ba-aa76-c434d2f11717"><td id="VqRX" class="" style="width:163.5px">Nombre</td><td id="NWbX" class="" style="width:429.5px">Nombre o razón social del cliente que realizó el pago</td></tr><tr id="243d8ede-0907-80c1-b1b4-cd459279bf40"><td id="VqRX" class="" style="width:163.5px">Forma pago</td><td id="NWbX" class="" style="width:429.5px">Medio de pago con el que se realizó el proceso</td></tr><tr id="243d8ede-0907-8055-8035-de2cfd4d2441"><td id="VqRX" class="" style="width:163.5px">Estado</td><td id="NWbX" class="" style="width:429.5px">Estado del pago que se realizó, entregado por Wompi</td></tr><tr id="243d8ede-0907-80e1-a842-f3859e90c11e"><td id="VqRX" class="" style="width:163.5px">Creador</td><td id="NWbX" class="" style="width:429.5px">Usuario que creó el pago</td></tr><tr id="243d8ede-0907-8037-a6ab-d5eb845643d9"><td id="VqRX" class="" style="width:163.5px">Comentarios</td><td id="NWbX" class="" style="width:429.5px">Información agregada por el bot, en caso de ser necesaria</td></tr><tr id="243d8ede-0907-8025-b1b9-f1fce4a4cd1e"><td id="VqRX" class="" style="width:163.5px">Valor</td><td id="NWbX" class="" style="width:429.5px">Monto del pago realizado</td></tr><tr id="243d8ede-0907-80de-b707-c199912b27d5"><td id="VqRX" class="" style="width:163.5px"><code>🔍</code></td><td id="NWbX" class="" style="width:429.5px"><a href="Clientes%20243d8ede090780048dc3d154e56da41d.html">Ver detalle del pago</a></td></tr><tr id="245d8ede-0907-800a-9fc8-d43458d040e7"><td id="VqRX" class="" style="width:163.5px"><code>🗑️</code></td><td id="NWbX" class="" style="width:429.5px"><a href="Clientes%20243d8ede090780048dc3d154e56da41d.html">Eliminar un pago con comprobante</a></td></tr></tbody></table></div></details><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">🔬 Ver detalle del pago</summary><div class="indented"><p id="243d8ede-0907-80c0-9dff-e49be6bfa54a" class="">Para ver el detalle de un pago, haga clic en <code>Fecha de ingreso</code></p><p id="243d8ede-0907-8024-ade6-dcd30ff5d9ca" class="">A continuación, ver dos opciones: <code>Resumen</code> y <code>Pago</code></p><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>Resumen</strong></summary><div class="indented"><ul id="243d8ede-0907-80a9-b7f9-cfeeb94d0f35" class="bulleted-list"><li style="list-style-type:disc">Muestra el detalle de las facturas pagadas por el usuario. Para visualizarlo haga clic en <code>Resumen</code> <a href="Clientes%20243d8ede090780048dc3d154e56da41d.html">(Ver tabla de datos)</a></li></ul><ul id="243d8ede-0907-80e3-9cfc-f940ce840783" class="bulleted-list"><li style="list-style-type:disc">También podrá visualizar y descargar el comprobante, haciendo clic en <code>Previsualizar </code>o <code>Descargar</code><figure id="243d8ede-0907-80ce-950b-c66df211b659" class="image"><a href="image%2036.png"><img style="width:528px" src="image%2036.png"/></a></figure></li></ul></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">🗃️ Gestionar un pago con comprobante</summary><div class="indented"><p id="243d8ede-0907-805a-a1c8-f9ea6ee97801" class="">Para subir un pago con comprobante, haga clic en el botón <code>Subir comprobante</code> </p><figure id="243d8ede-0907-80fb-a565-e89bb6b0503f" class="image"><a href="image%2037.png"><img style="width:681.984375px" src="image%2037.png"/></a></figure><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>1. Buscar cliente</strong></summary><div class="indented"><ul id="243d8ede-0907-80aa-81ea-c6aa874cd227" class="bulleted-list"><li style="list-style-type:disc">El primer paso es buscar el cliente al cual se le va a asociar el pago. Digite el nombre, apellido, razón social o documento de identificación y haga clic en <code>Buscar cliente</code><figure id="243d8ede-0907-80d3-9ef2-dc58fee1ca56" class="image"><a href="image%2038.png"><img style="width:653.984375px" src="image%2038.png"/></a></figure></li></ul><ul id="243d8ede-0907-8049-ad63-df275cf6f84b" class="bulleted-list"><li style="list-style-type:disc">El sistema mostrará todas las coincidencias encontradas con los datos proporcionados. Seleccione el cliente y haga clic en el ícono <code>+</code><figure id="243d8ede-0907-80ec-893a-fb545097791d" class="image"><a href="image%2039.png"><img style="width:625.984375px" src="image%2039.png"/></a></figure></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>2. Indicar datos del pago</strong></summary><div class="indented"><p id="243d8ede-0907-809b-a439-e731d7e6a6ab" class="">Una vez cargadas las facturas pendientes de pago, debe indicar los siguientes datos:<div class="indented"><table id="243d8ede-0907-8013-9744-f681a02bbdc9" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-8000-87fc-f3518e7f470d"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:378.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-8064-ab2a-ecc570085702"><td id="VqRX" class="" style="width:163.5px">Fecha de consignación</td><td id="NWbX" class="" style="width:378.5px">Fecha en la que se realizó el pago por parte del cliente</td></tr><tr id="243d8ede-0907-80fd-9747-d7b2b11d5ce1"><td id="VqRX" class="" style="width:163.5px">Monto</td><td id="NWbX" class="" style="width:378.5px">Valor pagado en el comprobante</td></tr><tr id="243d8ede-0907-80b2-ac04-c41d7339774f"><td id="VqRX" class="" style="width:163.5px">Cuenta</td><td id="NWbX" class="" style="width:378.5px">Banco por el cual se realizó el pago</td></tr><tr id="243d8ede-0907-807b-8da5-e856fc203236"><td id="VqRX" class="" style="width:163.5px">Referencia (opcional)</td><td id="NWbX" class="" style="width:378.5px">Código de la transacción del banco</td></tr><tr id="243d8ede-0907-80d9-8236-cef60acba68f"><td id="VqRX" class="" style="width:163.5px">Comprobante digital</td><td id="NWbX" class="" style="width:378.5px">Campo para subir el archivo comprobante del pago. Se permite cualquier formato</td></tr></tbody></table><figure id="243d8ede-0907-80ef-9323-e06c4f2dcdaf" class="image"><a href="image%2040.png"><img style="width:629.9375px" src="image%2040.png"/></a></figure></div></p></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>3. Seleccionar facturas para pagar</strong></summary><div class="indented"><ul id="243d8ede-0907-80b5-9d4b-f0e9d3eae726" class="bulleted-list"><li style="list-style-type:disc">El sistema visualizará los siguientes datos:<table id="243d8ede-0907-80d8-af1b-c43c337d04d8" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-809d-abe2-d88e3c685593"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:379.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-802d-9777-dd595870a09f"><td id="VqRX" class="" style="width:163.5px">+</td><td id="NWbX" class="" style="width:379.5px">Columna para seleccionar la factura</td></tr><tr id="29cd8ede-0907-8056-b9be-e8e9377d85d5"><td id="VqRX" class="" style="width:163.5px">RECIBO PENDIENTE</td><td id="NWbX" class="" style="width:379.5px">Indica si la factura tiene un recibo pendiente por aplicar</td></tr><tr id="243d8ede-0907-80a4-8f21-c5f4205f18c3"><td id="VqRX" class="" style="width:163.5px">SEDE</td><td id="NWbX" class="" style="width:379.5px">Sede donde se creó la factura</td></tr><tr id="243d8ede-0907-802e-a5ba-c4c62032e15a"><td id="VqRX" class="" style="width:163.5px">DOC</td><td id="NWbX" class="" style="width:379.5px">Número de documento cruce de Siesa</td></tr><tr id="29cd8ede-0907-803d-95db-f42a077a5416"><td id="VqRX" class="" style="width:163.5px">CUOTA</td><td id="NWbX" class="" style="width:379.5px">Número de cuota (si aplica)</td></tr><tr id="243d8ede-0907-80fc-982d-ebdbaace61ab"><td id="VqRX" class="" style="width:163.5px">FECHA FACT</td><td id="NWbX" class="" style="width:379.5px">Fecha de la factura</td></tr><tr id="243d8ede-0907-80ec-b2ef-c622d39366b9"><td id="VqRX" class="" style="width:163.5px">FECHA VCTO</td><td id="NWbX" class="" style="width:379.5px">Fecha de vencimiento de la factura</td></tr><tr id="243d8ede-0907-809d-9c92-f2ce19866fcc"><td id="VqRX" class="" style="width:163.5px">DIAS VENC</td><td id="NWbX" class="" style="width:379.5px">Días que lleva vencida la factura</td></tr><tr id="243d8ede-0907-807a-b86d-f77a89ab6cc9"><td id="VqRX" class="" style="width:163.5px">VALOR DOC</td><td id="NWbX" class="" style="width:379.5px">Monto inicial de la factura</td></tr><tr id="243d8ede-0907-806a-8c6c-c1e2e68c847f"><td id="VqRX" class="" style="width:163.5px">ABONOS</td><td id="NWbX" class="" style="width:379.5px">Monto total de los abonos aplicados a la factura, de ser el caso</td></tr><tr id="243d8ede-0907-800a-ac3e-df18122ef195"><td id="VqRX" class="" style="width:163.5px">SALDO</td><td id="NWbX" class="" style="width:379.5px">Valor pendiente de la factura</td></tr><tr id="243d8ede-0907-80b9-8653-ea53ee8d0443"><td id="VqRX" class="" style="width:163.5px">RETENCIONES</td><td id="NWbX" class="" style="width:379.5px">Opción para ver las retenciones de la factura</td></tr><tr id="243d8ede-0907-80ca-80ce-ef1c917d8e24"><td id="VqRX" class="" style="width:163.5px">SUCURSAL</td><td id="NWbX" class="" style="width:379.5px">Sucursal del cliente al cual pertenece la factura</td></tr><tr id="243d8ede-0907-8009-a8de-efa78f57f20f"><td id="VqRX" class="" style="width:163.5px">TIPO CRÉDITO</td><td id="NWbX" class="" style="width:379.5px">Tipo de crédito</td></tr></tbody></table><figure id="29cd8ede-0907-80d8-8ca0-d33d60b0656c" class="image"><a href="image%2041.png"><img style="width:569.96875px" src="image%2041.png"/></a></figure></li></ul><ul id="243d8ede-0907-80ab-a93d-d86ad5ba8193" class="bulleted-list"><li style="list-style-type:disc">En la sección <code>Facturas pendientes de pago</code> seleccione una factura haciendo clic en el botón de la columna <code>+</code><figure id="243d8ede-0907-80d0-a0a5-dea3cd509e82" class="image"><a href="image%2042.png"><img style="width:625.953125px" src="image%2042.png"/></a></figure></li></ul><ul id="243d8ede-0907-8098-a1a0-f3f8ebb0d6dd" class="bulleted-list"><li style="list-style-type:disc">La factura pasará a la sección <code>Facturas seleccionadas para pago</code></li></ul><ul id="243d8ede-0907-8051-acb4-e6bb52da59b9" class="bulleted-list"><li style="list-style-type:disc">En esta sección puede modificar los siguientes datos:<ul id="243d8ede-0907-80cd-88ee-d5bdc0154583" class="bulleted-list"><li style="list-style-type:circle">Valor a pagar</li></ul><ul id="243d8ede-0907-8027-b2bd-cdfe6133924d" class="bulleted-list"><li style="list-style-type:circle">Descuento</li></ul><figure id="29cd8ede-0907-80bb-a96c-d318c61f6ae3" class="image"><a href="image%2043.png"><img style="width:569.953125px" src="image%2043.png"/></a></figure><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="243d8ede-0907-80c6-bcca-e83f8424add0"><div style="font-size:1.5em"><span class="icon">📌</span></div><div style="width:100%"><p id="243d8ede-0907-80d9-b8e9-ca89a8a4e229" class="">Puede hacer el pago total o parcial del valor de una o de varias facturas</p></div></figure></li></ul><ul id="243d8ede-0907-8096-a662-dedd4b6777a8" class="bulleted-list"><li style="list-style-type:disc">Si no desea sumar esta factura al pago, puede eliminarla haciendo clic en el botón de la columna <code>QUITAR</code><figure id="243d8ede-0907-8076-8b3a-fa9e75f1057f" class="image"><a href="image%2044.png"><img style="width:625.9375px" src="image%2044.png"/></a></figure></li></ul><ul id="243d8ede-0907-809f-9532-cb93fa2a2210" class="bulleted-list"><li style="list-style-type:disc">Al final, el sistema le indicará cuánto se ha aplicado y el valor pendiente:<figure id="243d8ede-0907-80f0-8258-f7c475651ec3" class="image"><a href="image%2045.png"><img style="width:432px" src="image%2045.png"/></a></figure></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>4. Guardar el comprobante</strong></summary><div class="indented"><ul id="243d8ede-0907-8079-a382-c2462d688d1b" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el botón <code>Guardar pago con comprobante</code><figure id="243d8ede-0907-805a-93d0-ee36a7268856" class="image"><a href="image%2046.png"><img style="width:625.984375px" src="image%2046.png"/></a></figure></li></ul><ul id="243d8ede-0907-8031-9d01-e4ac924451b2" class="bulleted-list"><li style="list-style-type:disc">El sistema le pedirá confirmación, y si la diferencia no es cero, le indicará lo que hará con el valor que difiere:<figure id="243d8ede-0907-80eb-a1dd-e84712f12363" class="image"><a href="image%2047.png"><img style="width:432px" src="image%2047.png"/></a></figure></li></ul><ul id="243d8ede-0907-80a5-bbb6-f2711672b862" class="bulleted-list"><li style="list-style-type:disc">Una vez guardado, el bot lo procesará y enviará a Siesa.</li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>5. Descargar estado de cuenta en Excel</strong></summary><div class="indented"><ul id="243d8ede-0907-80c6-8180-f5d0b2fb7724" class="bulleted-list"><li style="list-style-type:disc">Podrá descargar las facturas pendientes de pago, haciendo clic en el botón <code>Descargar listado de facturas o estado de cuenta</code></li></ul><ul id="243d8ede-0907-8002-83c1-e26d2d1288cb" class="bulleted-list"><li style="list-style-type:disc">El sistema le generará un archivo en formato Excel con los datos de las facturas pendientes de pago:<figure id="243d8ede-0907-803c-a33f-f4617c97020e" class="image"><a href="image%2048.png"><img style="width:625.96875px" src="image%2048.png"/></a></figure></li></ul><p id="243d8ede-0907-809a-bd86-e2676e2149ac" class="">
+</p></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">6. Ver recibos pendientes por procesar</summary><div class="indented"><ul id="29cd8ede-0907-8081-98b1-d671d1d5e1bc" class="bulleted-list"><li style="list-style-type:disc">Podrá ver todos los recibos que el cliente tenga pendientes por procesar en el ERP, haciendo clic en el botón <code>🔍Ver recibos pendientes por procesar</code></li></ul><ul id="29cd8ede-0907-808e-9d05-fa58e897a933" class="bulleted-list"><li style="list-style-type:disc">El sistema le mostrará el listado de recibos:<figure id="29cd8ede-0907-8012-8ce5-f39b0b84b64f" class="image"><a href="image%2049.png"><img style="width:569.984375px" src="image%2049.png"/></a></figure></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>7. Ver productos asociados a la factura</strong></summary><div class="indented"><p id="243d8ede-0907-8074-8b97-d02926ae55c6" class="">Podrá visualizar el detalle de los productos que fueron adquiridos en la factura que se seleccione.</p><ul id="243d8ede-0907-8032-bcfd-ea661b99df17" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el número de documento cruce de la columna <code>DOC</code><figure id="29cd8ede-0907-809a-bab5-f98dc7e77353" class="image"><a href="image%2050.png"><img style="width:569.96875px" src="image%2050.png"/></a></figure></li></ul><ul id="243d8ede-0907-8093-a865-f0fe3404d012" class="bulleted-list"><li style="list-style-type:disc">Verá la lista de productos y su detalle:<figure id="243d8ede-0907-8072-9fe4-d2630ef68648" class="image"><a href="image%2051.png"><img style="width:480px" src="image%2051.png"/></a></figure><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="243d8ede-0907-80ad-8830-d6752d0f335c"><div style="font-size:1.5em"><span class="icon">📌</span></div><div style="width:100%"><p id="243d8ede-0907-802d-a267-ca6966d8232f" class="">En ocasiones, algunos productos no tendrán foto asociada. Esto sucede porque no se le ha subido la imagen en el eCommerce</p></div></figure></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0"><strong>8. Ver retenciones aplicadas a la factura</strong></summary><div class="indented"><p id="243d8ede-0907-801b-83ce-ea57f506f8db" class="">Visualice todas las retenciones aplicadas a las facturas del cliente</p><ul id="243d8ede-0907-800d-869c-ea57c35502a7" class="bulleted-list"><li style="list-style-type:disc">Haga clic en la opción <code>Ver</code> de la columna <code>RETENCIONES</code><figure id="243d8ede-0907-80ec-a2ff-fbc9967f51d5" class="image"><a href="image%2052.png"><img style="width:625.96875px" src="image%2052.png"/></a></figure></li></ul><ul id="243d8ede-0907-8021-9151-c8295d6479c8" class="bulleted-list"><li style="list-style-type:disc">Si la factura tiene estos datos, los podrá visualizar:<figure id="243d8ede-0907-8054-9f9a-c686879bd296" class="image"><a href="image%2053.png"><img style="width:480px" src="image%2053.png"/></a></figure></li></ul></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">🗑️ Eliminar un pago con comprobante</summary><div class="indented"><ul id="243d8ede-0907-805c-8527-d7da3a840383" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el ícono <code>🗑️</code></li></ul><ul id="243d8ede-0907-80e4-8dc9-d9d403725234" class="bulleted-list"><li style="list-style-type:disc">El sistema le preguntará si está seguro y procederá a borrar el registro</li></ul><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="243d8ede-0907-8005-90a0-c583ed4aebd2"><div style="font-size:1.5em"><span class="icon">⚠️</span></div><div style="width:100%"><p id="243d8ede-0907-800e-abe8-f1f46191663c" class="">Esta opción solo está disponible para recibos que no han sido procesados por el bot (Estado <code>Por validar</code>)</p></div></figure></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">💰 Otras transacciones Wompi</summary><div class="indented"><hr id="243d8ede-0907-803c-98e2-deaa16ba1dc7"/><p id="243d8ede-0907-802c-84e1-f360ecd11d46" class="">Todos los pagos realizados en Wompi llegan a esta sección</p><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">📋 Ver registros</summary><div class="indented"><p id="243d8ede-0907-8012-89d9-f015cd7a738f" class="">Ingrese a <code>Ajustes / Clientes / Pagos</code> y haga clic en la pestaña <code>Otras transacciones Wompi</code></p><table id="243d8ede-0907-80ed-933d-f91dadc6e146" class="simple-table"><thead class="simple-table-header"><tr id="243d8ede-0907-80cf-b217-def41b41d5fe"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:464.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="243d8ede-0907-80fd-8c23-f3587ba63f01"><td id="VqRX" class="" style="width:163.5px">Fecha ingreso</td><td id="NWbX" class="" style="width:464.5px">Fecha en la que se creó el registro</td></tr><tr id="243d8ede-0907-806c-ac7d-f9623aad58c7"><td id="VqRX" class="" style="width:163.5px">Hora ingreso</td><td id="NWbX" class="" style="width:464.5px">Hora en la que se creó el registro</td></tr><tr id="243d8ede-0907-8093-b19a-d7b86e8b406f"><td id="VqRX" class="" style="width:163.5px">Fecha pago</td><td id="NWbX" class="" style="width:464.5px">Fecha en la que se realizó el pago por parte del cliente</td></tr><tr id="243d8ede-0907-8084-b9dd-ef0e090e4a1f"><td id="VqRX" class="" style="width:163.5px">NIT</td><td id="NWbX" class="" style="width:464.5px">Número de identificación del cliente que realizó el pago</td></tr><tr id="243d8ede-0907-80f3-a836-ea4eda0bdc8f"><td id="VqRX" class="" style="width:163.5px">Nombre</td><td id="NWbX" class="" style="width:464.5px">Nombre o razón social del cliente que realizó el pago</td></tr><tr id="243d8ede-0907-80f7-ba65-fe02c035eb43"><td id="VqRX" class="" style="width:163.5px">Forma pago</td><td id="NWbX" class="" style="width:464.5px">Medio de pago con el que se realizó el proceso</td></tr><tr id="243d8ede-0907-8046-bfda-fc7f36e73623"><td id="VqRX" class="" style="width:163.5px">Recibo Siesa</td><td id="NWbX" class="" style="width:464.5px">Número de recibo obtenido después de asentar el pago en Siesa</td></tr><tr id="243d8ede-0907-8012-ae02-fa91f620ed05"><td id="VqRX" class="" style="width:163.5px">Estado</td><td id="NWbX" class="" style="width:464.5px">Estado del pago que se realizó, entregado por Wompi</td></tr><tr id="243d8ede-0907-8035-bb84-dc60cac8430c"><td id="VqRX" class="" style="width:163.5px">Creador</td><td id="NWbX" class="" style="width:464.5px">Usuario que creó el pago</td></tr><tr id="243d8ede-0907-806c-bad5-fd6b27b89379"><td id="VqRX" class="" style="width:163.5px">Gestionador</td><td id="NWbX" class="" style="width:464.5px">Usuario que aprueba o rechaza el pago (no aplica para pagos en línea)</td></tr><tr id="243d8ede-0907-8055-917d-fe220f3211ff"><td id="VqRX" class="" style="width:163.5px">Valor</td><td id="NWbX" class="" style="width:464.5px">Monto del pago realizado</td></tr></tbody></table></div></details></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📄 Solicitudes de crédito</summary><div class="indented"><hr id="28bd8ede-0907-80b2-94e0-f9b3727fa900"/><p id="28bd8ede-0907-80e4-bf5d-f09f99a73dd0" class="">Este submódulo permite la gestión de las solicitudes de crédito de los clientes</p><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📋 Ver registros</summary><div class="indented"><p id="29cd8ede-0907-80d9-869c-c78a455f384b" class="">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code></p><table id="29cd8ede-0907-800f-a140-fb69095cc09c" class="simple-table"><thead class="simple-table-header"><tr id="29cd8ede-0907-806a-8706-e8a43208918c"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:433.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="29cd8ede-0907-80c8-b71f-fc9d00a4292e"><td id="VqRX" class="" style="width:163.5px">Id</td><td id="NWbX" class="" style="width:433.5px">Identificador único de la solicitud</td></tr><tr id="29cd8ede-0907-80c1-8aa2-cbbafd434436"><td id="VqRX" class="" style="width:163.5px">Creación</td><td id="NWbX" class="" style="width:433.5px">Fecha en la que se realizó la solicitud</td></tr><tr id="29cd8ede-0907-808e-a3b1-ea720b8ae49a"><td id="VqRX" class="" style="width:163.5px">Hora</td><td id="NWbX" class="" style="width:433.5px">Hora en la que se realizó la solicitud</td></tr><tr id="29cd8ede-0907-802e-9f31-fee503723067"><td id="VqRX" class="" style="width:163.5px">Cierre</td><td id="NWbX" class="" style="width:433.5px">Fecha en que se finalizó la gestión de la solicitud</td></tr><tr id="29cd8ede-0907-8072-8d83-d68d88913bc0"><td id="VqRX" class="" style="width:163.5px">Hora</td><td id="NWbX" class="" style="width:433.5px">Hora en la que se realizó el cierre de la solicitud</td></tr><tr id="29cd8ede-0907-80cf-9d61-d9f9584e1f48"><td id="VqRX" class="" style="width:163.5px">NIT</td><td id="NWbX" class="" style="width:433.5px">Número de identificación del cliente o prospecto que realizó la solicitud</td></tr><tr id="29cd8ede-0907-80a2-a92c-cf41487d9532"><td id="VqRX" class="" style="width:163.5px">Nombre</td><td id="NWbX" class="" style="width:433.5px">Nombre o razón social del cliente o prospecto</td></tr><tr id="29cd8ede-0907-80c7-9781-f2d22730a4b4"><td id="VqRX" class="" style="width:163.5px">Estado</td><td id="NWbX" class="" style="width:433.5px">Estado de la solicitud</td></tr><tr id="29cd8ede-0907-80d2-84d7-ea932f86750b"><td id="VqRX" class="" style="width:163.5px">Vendedor</td><td id="NWbX" class="" style="width:433.5px">Nombre del asesor comercial seleccionado al momento de diligenciar la solicitud</td></tr><tr id="29cd8ede-0907-80a0-9994-fbf241a9f749"><td id="VqRX" class="" style="width:163.5px">Gestionador</td><td id="NWbX" class="" style="width:433.5px">Persona asignada para atención de la solicitud</td></tr><tr id="29cd8ede-0907-8075-b172-d6bd1af2ccba"><td id="VqRX" class="" style="width:163.5px">Cupo asignado</td><td id="NWbX" class="" style="width:433.5px">Para solicitudes aprobadas, indica el cupo que se le asignó</td></tr><tr id="29cd8ede-0907-8045-908b-d9d1dfe885ef"><td id="VqRX" class="" style="width:163.5px">Motivo rechazo</td><td id="NWbX" class="" style="width:433.5px">para solicitudes rechazadas, indica el motivo por el cual se denegó la solicitud</td></tr><tr id="29cd8ede-0907-80a8-a9ff-fc17c2a331d3"><td id="VqRX" class="" style="width:163.5px">Último comentario</td><td id="NWbX" class="" style="width:433.5px">Último registro agregado en la bitácora</td></tr></tbody></table><figure id="29cd8ede-0907-8092-9951-fc9785400d70" class="image"><a href="image%2054.png"><img style="width:653.96875px" src="image%2054.png"/></a></figure></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📄 Formulario</summary><div class="indented"><hr id="28bd8ede-0907-80e5-985a-d7791a10a467"/><ul id="28bd8ede-0907-806c-ab57-d37536403e35" class="bulleted-list"><li style="list-style-type:disc">Ingrese a <a href="https://repuestossimonbolivar.com/clientes/credito">https://repuestossimonbolivar.com/clientes/credito</a></li></ul><ul id="28bd8ede-0907-80ba-87fb-f8a24a00dfb9" class="bulleted-list"><li style="list-style-type:disc">Diligencie el formulario y haga clic en <code>Enviar solicitud de crédito</code><figure id="29cd8ede-0907-8099-8de2-f70d72323df8" class="image"><a href="image%2055.png"><img style="width:625.96875px" src="image%2055.png"/></a></figure></li></ul><ul id="28bd8ede-0907-8041-b685-c78765d54d95" class="bulleted-list"><li style="list-style-type:disc">El sistema enviará un email confirmando el registro de la solicitud<figure id="29cd8ede-0907-80a2-ba75-ca80f85fbfa1" class="image"><a href="image%2056.png"><img style="width:480px" src="image%2056.png"/></a></figure></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📂 Archivos</summary><div class="indented"><p id="29cd8ede-0907-80de-862f-fb2e048fc0e7" class="">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code> y haga clic en el NIT de la solicitud que desee ver</p><table id="29cd8ede-0907-80a0-b6cd-e8795de4bd65" class="simple-table"><thead class="simple-table-header"><tr id="29cd8ede-0907-80d0-b9aa-cb3f3125072f"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:460.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="29cd8ede-0907-8064-a37f-d85426dce723"><td id="VqRX" class="" style="width:163.5px">#</td><td id="NWbX" class="" style="width:460.5px">Consecutivo del archivo</td></tr><tr id="29cd8ede-0907-808a-8a95-f2a1a301b63f"><td id="VqRX" class="" style="width:163.5px">Archivo</td><td id="NWbX" class="" style="width:460.5px">Nombre del archivo</td></tr><tr id="29cd8ede-0907-8012-9abd-c981af6c7773"><td id="VqRX" class="" style="width:163.5px"><code>🔍</code></td><td id="NWbX" class="" style="width:460.5px">Ver archivo (aplica para imágenes y documentos en PDF)</td></tr><tr id="29cd8ede-0907-804a-b74f-f37ec4eb7942"><td id="VqRX" class="" style="width:163.5px">⬇️</td><td id="NWbX" class="" style="width:460.5px">Descarga el archivo en el computador</td></tr></tbody></table><figure id="29cd8ede-0907-8034-bceb-ea528729e69f" class="image"><a href="image%2057.png"><img style="width:653.96875px" src="image%2057.png"/></a></figure></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">✒️ Bitácora</summary><div class="indented"><hr id="29cd8ede-0907-80ce-9b73-d616fd801773"/><p id="29cd8ede-0907-80c0-bce8-c7eef4c16780" class="">En esta sección podrá agregar anotaciones a la solicitud de crédito</p><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">📋 Ver registros</summary><div class="indented"><ul id="29cd8ede-0907-808b-838f-c1570df32c86" class="bulleted-list"><li style="list-style-type:disc">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code></li></ul><ul id="29cd8ede-0907-809e-97c6-c178f1b7de36" class="bulleted-list"><li style="list-style-type:disc">Haga clic en la pestaña <code>Bitácora</code></li></ul><table id="29cd8ede-0907-8043-abaa-cb05338c2ca9" class="simple-table"><thead class="simple-table-header"><tr id="29cd8ede-0907-8037-b34f-cae3662d0ced"><th id="VqRX" class="block-color-blue simple-table-header" style="width:163.5px"><strong>Campo</strong></th><th id="NWbX" class="block-color-blue simple-table-header" style="width:433.5px"><strong>Descripción</strong></th></tr></thead><tbody><tr id="29cd8ede-0907-8087-a599-cf5164839158"><td id="VqRX" class="" style="width:163.5px">Id</td><td id="NWbX" class="" style="width:433.5px">Identificador único del registro</td></tr><tr id="29cd8ede-0907-8093-9443-f21a2dde7da4"><td id="VqRX" class="" style="width:163.5px">Creación</td><td id="NWbX" class="" style="width:433.5px">Fecha en la que se realizó la anotación</td></tr><tr id="29cd8ede-0907-8064-80f5-ebffe11a038d"><td id="VqRX" class="" style="width:163.5px">Hora</td><td id="NWbX" class="" style="width:433.5px">Hora en la que se creo el registro</td></tr><tr id="29cd8ede-0907-80e4-bd11-f54e4d46904c"><td id="VqRX" class="" style="width:163.5px">Comentarios</td><td id="NWbX" class="" style="width:433.5px">Información diligenciada en el registro</td></tr><tr id="29cd8ede-0907-808b-a9ff-e5bc1f969220"><td id="VqRX" class="" style="width:163.5px">Usuario</td><td id="NWbX" class="" style="width:433.5px">Usuario del sistema que agregó el registro en la bitácora</td></tr></tbody></table><figure id="29cd8ede-0907-8049-a921-ecbeb4385d68" class="image"><a href="image%2058.png"><img style="width:625.984375px" src="image%2058.png"/></a></figure></div></details><details open=""><summary style="font-weight:600;font-size:1.5em;line-height:1.3;margin:0">➕ Agregar registro en la bitácora</summary><div class="indented"><ul id="29cd8ede-0907-8094-a3ec-e4cb99d85158" class="bulleted-list"><li style="list-style-type:disc">Para agregar un registro o seguimiento de la solicitud, haga clic en el botón <code>Crear</code></li></ul><ul id="29cd8ede-0907-8032-b4f9-fc3f5d654c7f" class="bulleted-list"><li style="list-style-type:disc">Agregue la información del comentario y haga clic en <code>Guardar</code><figure id="29cd8ede-0907-8039-9ff6-e2ff22ba3440" class="image"><a href="image%2059.png"><img style="width:597.96875px" src="image%2059.png"/></a></figure></li></ul></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">🕞 Asignación automática de solicitudes</summary><div class="indented"><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="28bd8ede-0907-80a0-a9a7-fc6988ccf018"><div style="font-size:1.5em"><span class="icon">ℹ️</span></div><div style="width:100%"><p id="28bd8ede-0907-80ca-90bd-f0969933836f" class="">El sistema tiene una funcionalidad que permite hacer asignación automática de una solicitud de crédito cuando ingrese.</p></div></figure><h3 id="28bd8ede-0907-80ea-9e23-dee36bb1d9db" class="">Asignación de rol</h3><p id="28bd8ede-0907-801e-968c-c3e59604c6df" class="">Primero, debe asegurarse que el perfil del usuario al que se le van a asignar las solicitudes tenga el rol <code>Asignación automática de solicitudes de crédito</code> activo.</p><p id="28bd8ede-0907-8020-843c-fe4f39df39fe" class="">Si no lo tiene, vaya a la sección <a href="Perfiles%20243d8ede09078015abbec2e947cdebca.html">Perfiles</a> y asigne el perfil que corresponda, como por ejemplo, el perfil <em>Crédito y Cartera</em></p><h3 id="28bd8ede-0907-80c2-8d2d-e6c9bd1adbe0" class="">Validar que el usuario sea seleccionado para recibir asignaciones automáticas</h3><p id="28bd8ede-0907-8085-b5e1-c3e2c33b4454" class="">Cuando ingrese al módulo de solicitudes de crédito, deberá ver la siguiente leyenda:</p><figure id="28bd8ede-0907-806a-bf3d-ea9626a49f81" class="image"><a href="image%2060.png"><img style="width:653.953125px" src="image%2060.png"/></a></figure><h3 id="28bd8ede-0907-8028-9c81-eedbfffe0542" class="">¿Cómo se asignan las solicitudes?</h3><ul id="28bd8ede-0907-8061-b087-d6f5ea34bbfc" class="bulleted-list"><li style="list-style-type:disc">Una vez que el usuario está disponible, el sistema refresca su estado cada 2 minutos</li></ul><ul id="28bd8ede-0907-80a3-9d5f-f32a1095d0a9" class="bulleted-list"><li style="list-style-type:disc">El sistema valida todos los usuarios que se encuentren disponibles para asignación automática</li></ul><ul id="28bd8ede-0907-80d3-af09-df759afa7191" class="bulleted-list"><li style="list-style-type:disc">De los usuarios disponibles, el sistema selecciona primero el usuario que menos solicitudes asignadas tenga</li></ul><ul id="28bd8ede-0907-80d3-be1a-e37af0fb7b7a" class="bulleted-list"><li style="list-style-type:disc">Una vez asignada el sistema mostrará en el listado de registros, el nombre del usuario y una marca que indica que fue asignado automáticamente:<figure id="28bd8ede-0907-80d2-831a-dc24d2f50869" class="image"><a href="image%2061.png"><img style="width:625.96875px" src="image%2061.png"/></a></figure></li></ul><ul id="28bd8ede-0907-804f-8a91-ce905dba7a8e" class="bulleted-list"><li style="list-style-type:disc">Cuando el usuario cierre la pestaña, inmediatamente el sistema lo va a marcar como <code>No disponible</code></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">📝 Enviar solicitud a firma</summary><div class="indented"><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="29cd8ede-0907-8083-976a-c51881556016"><div style="font-size:1.5em"><span class="icon">ℹ️</span></div><div style="width:100%"><p id="29cd8ede-0907-80d5-8f1b-eaf13b223a7d" class="">El bot va a recibir las solicitudes que estén pendientes de firma, una vez se marque esta opción</p></div></figure><ul id="29cd8ede-0907-80dd-af68-cb8fc3d0f112" class="bulleted-list"><li style="list-style-type:disc">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code> y haga clic en el NIT de la solicitud que desee ver</li></ul><ul id="29cd8ede-0907-8014-a40c-db05afaa2eef" class="bulleted-list"><li style="list-style-type:disc">Haga clic en la pestaña <code>Opciones</code></li></ul><ul id="29cd8ede-0907-80c5-b25f-c4cfbb2d3c4f" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el botón <code>Enviar para firma</code><figure id="29cd8ede-0907-80b1-86fb-f15c9bfc9a44" class="image"><a href="image%2062.png"><img style="width:625.921875px" src="image%2062.png"/></a></figure></li></ul><ul id="29cd8ede-0907-808c-a827-d5fca8459d81" class="bulleted-list"><li style="list-style-type:disc">Cuando el sistema le pregunte si está seguro, haga clic en <code>Si, enviar</code></li></ul><ul id="29cd8ede-0907-802e-91ed-c2eaf8d8bf9d" class="bulleted-list"><li style="list-style-type:disc">La solicitud se marcará como pendiente de firma y podrá ser tomada por el bot, según la especificación en la documentación de la <a href="https://www.notion.so/1-Documentaci-n-t-cnica-229d8ede09078056adbcf1007afed07c?pvs=21">API de Simón Bolívar</a></li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0"> 👤 Asignar / Reasignar solicitud</summary><div class="indented"><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="29cd8ede-0907-80dc-93d2-efb7ef3fa26d"><div style="font-size:1.5em"><span class="icon">ℹ️</span></div><div style="width:100%"><p id="29cd8ede-0907-809e-a6e5-dcfa9cbd7940" class="">Podrá asignar la solicitud a un usuario que tenga el perfil <em><strong>Crédito y Catera</strong></em> o cambiar el usuario asignado en cualquier momento</p></div></figure><ul id="29cd8ede-0907-80c2-bfda-c38e55b85dda" class="bulleted-list"><li style="list-style-type:disc">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code> y haga clic en el NIT de la solicitud que desee ver</li></ul><ul id="29cd8ede-0907-8014-b901-c2c1d73024cb" class="bulleted-list"><li style="list-style-type:disc">Haga clic en la pestaña <code>Opciones</code></li></ul><ul id="29cd8ede-0907-80ae-a469-c00f03db39d7" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el botón <code>👤 Asignar solicitud</code> o <code>👤 Reasignar solicitud</code> y seleccione el usuario al cual va a asignar/reasignar<figure id="29cd8ede-0907-80d1-a8be-ccfb1928e805" class="image"><a href="image%2063.png"><img style="width:625.984375px" src="image%2063.png"/></a></figure></li></ul><ul id="29cd8ede-0907-80cb-ba51-ffdb098fcd72" class="bulleted-list"><li style="list-style-type:disc">Seleccione el usuario<figure id="29cd8ede-0907-8078-8d26-e58002db787b" class="image"><a href="image%2062.png"><img style="width:625.921875px" src="image%2062.png"/></a></figure></li></ul><ul id="29cd8ede-0907-80c7-bbc6-f8ba070c1046" class="bulleted-list"><li style="list-style-type:disc">Una vez guarde cambios, se creará un registro en la bitácora con el dato de la asignación</li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0"> ✅ Aprobar solicitud</summary><div class="indented"><ul id="29cd8ede-0907-8097-a370-d887bfad84f0" class="bulleted-list"><li style="list-style-type:disc">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code> y haga clic en el NIT de la solicitud que desee ver</li></ul><ul id="29cd8ede-0907-80d5-ae29-d851b4e65565" class="bulleted-list"><li style="list-style-type:disc">Haga clic en la pestaña <code>Opciones</code></li></ul><ul id="29cd8ede-0907-80e8-b46e-fa66dd7636f2" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el botón  <code>✅ Aprobar solicitud</code><figure id="29cd8ede-0907-8009-95a2-d30968998483" class="image"><a href="image%2064.png"><img style="width:625.9375px" src="image%2064.png"/></a></figure></li></ul><ul id="29cd8ede-0907-80a4-bd52-db7b4bd37819" class="bulleted-list"><li style="list-style-type:disc">A continuación, indique si el cliente es responsable de IVA y el cupo que se le asigna<figure id="29cd8ede-0907-80bd-90e4-e3589911d4f7" class="image"><a href="image%2065.png"><img style="width:538px" src="image%2065.png"/></a></figure></li></ul><ul id="29cd8ede-0907-80c2-8a2b-e9ceffe59ff9" class="bulleted-list"><li style="list-style-type:disc">Al hacer clic en <code>Confirmar</code>, el sistema creará un registro en bitácora y creará o actualizará el tercero en el ERP, para que inmediatamente quede habilitado para compras a crédito</li></ul></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0"> ❌ Rechazar solicitud</summary><div class="indented"><ul id="29cd8ede-0907-8051-9a99-db18a2ccbf1a" class="bulleted-list"><li style="list-style-type:disc">Ingrese a <code>Ajustes / Clientes / Solicitudes de crédito</code> y haga clic en el NIT de la solicitud que desee ver</li></ul><ul id="29cd8ede-0907-80a4-b514-c51750a8e7dd" class="bulleted-list"><li style="list-style-type:disc">Haga clic en la pestaña <code>Opciones</code></li></ul><ul id="29cd8ede-0907-8051-b95f-db4591122864" class="bulleted-list"><li style="list-style-type:disc">Haga clic en el botón  <code>❌ Rechazarsolicitud</code><figure id="29cd8ede-0907-8040-80e9-da6e3965478e" class="image"><a href="image%2066.png"><img style="width:625.921875px" src="image%2066.png"/></a></figure></li></ul><ul id="29cd8ede-0907-803f-9459-edaee0dc1ab4" class="bulleted-list"><li style="list-style-type:disc">Indique el motivo de rechazo de la solicitud<figure id="29cd8ede-0907-8041-9c19-da7a11de9f32" class="image"><a href="image%2067.png"><img style="width:527px" src="image%2067.png"/></a></figure></li></ul><ul id="29cd8ede-0907-8068-b86e-f6de9fe9f81a" class="bulleted-list"><li style="list-style-type:disc">Al hacer clic en <code>Confirmar</code>, el sistema creará un registro en bitácora</li></ul></div></details></div></details><details open=""><summary style="font-weight:600;font-size:1.875em;line-height:1.3;margin:0">Pedidos</summary></details><p id="28cd8ede-0907-802f-b46d-d737f8838de2" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
