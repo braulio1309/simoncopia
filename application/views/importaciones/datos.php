@@ -92,7 +92,7 @@ if (empty($importaciones)) { ?>
                                 <a href="<?php echo site_url('importaciones/editar/' . $item->id); ?>" class="btn btn-sm btn-light text-primary" title="Editar">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-light text-danger" onclick="confirmarEliminar(<?php echo $item->id; ?>)" title="Eliminar">
+                                <button type="button" class="btn btn-sm btn-light text-danger" onclick="eliminarImportacion(<?php echo $item->id; ?>)" title="Eliminar">
                                     <i class="far fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -109,10 +109,16 @@ if (empty($importaciones)) { ?>
 <?php } ?>
 
 <script>
-    // Script simple para eliminar (puedes moverlo a tu archivo JS global)
-    function confirmarEliminar(id) {
-        if (confirm('¿Estás seguro de eliminar la importación IMP-' + String(id).padStart(3, '0') + '?')) {
-            window.location.href = '<?php echo site_url("importaciones/eliminar/"); ?>' + id;
+    eliminarImportacion = async (id) => {
+        let confirmacion = await confirmar('Eliminar', `¿Está seguro de eliminar la importación IMP-${String(id).padStart(3, '0')}?`)
+        
+        if (confirmacion) {
+            let eliminar = await consulta('eliminar', {tipo: 'importaciones', id: id})
+
+            if (eliminar) {
+                mostrarAviso('exito', 'Importación eliminada correctamente', 5000)
+                listarImportaciones()
+            }
         }
     }
 </script>
