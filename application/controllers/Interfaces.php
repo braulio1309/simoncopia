@@ -636,6 +636,14 @@ class Interfaces extends CI_Controller {
             case 'importaciones_maestro_anticipos':
                 print json_encode(['resultado' => $this->configuracion_model->eliminar($tipo, $datos)]);
             break;
+
+            case 'importaciones':
+                // Eliminar registros relacionados primero
+                $this->importaciones_model->eliminar('importaciones_bitacora', ['importacion_id' => $datos['id']]);
+                $this->importaciones_pagos_model->eliminar_por_importacion($datos['id']);
+                
+                print json_encode(['resultado' => $this->importaciones_model->eliminar('importaciones', $datos)]);
+            break;
         }
     }
 
