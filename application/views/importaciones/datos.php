@@ -118,6 +118,8 @@ if (empty($importaciones)) { ?>
             if (eliminar) {
                 mostrarAviso('exito', 'Importación eliminada correctamente', 5000)
                 listarImportaciones()
+            } else {
+                mostrarAviso('error', 'No se pudo eliminar la importación', 5000)
             }
         }
     }
