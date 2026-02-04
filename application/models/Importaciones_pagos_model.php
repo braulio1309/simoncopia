@@ -47,7 +47,7 @@ class Importaciones_pagos_model extends CI_Model {
     public function eliminar_por_importacion($importacion_id) {
         $this->db->where('importacion_id', $importacion_id);
         $this->db->delete('importaciones_pagos');
-        return $this->db->affected_rows() >= 0;
+        return $this->db->affected_rows() > 0;
     }
 
     function obtener_general($tabla, $datos = null) {
