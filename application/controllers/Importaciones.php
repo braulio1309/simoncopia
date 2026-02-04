@@ -287,6 +287,42 @@ class Importaciones extends MY_Controller
             echo json_encode(['status' => 'error', 'mensaje' => 'No se pudieron guardar los datos. Verifique e intente nuevamente.']);
         }
     }
+
+    /**
+     * Eliminar una importación
+     * 
+     * Elimina un registro de importación de la base de datos
+     * También debería eliminar registros relacionados (bitácora, pagos, etc.)
+     */
+    public function eliminar()
+    {
+        if (!$this->input->is_ajax_request()) {
+            redirect('inicio');
+        }
+
+        $id = $this->input->post('id');
+
+        if (empty($id)) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'ID de importación no proporcionado']);
+            return;
+        }
+
+        // Eliminar registros relacionados primero
+        // Bitácora
+        $this->importaciones_model->eliminar('importaciones_bitacora', ['importacion_id' => $id]);
+        
+        // Pagos
+        $this->importaciones_pagos_model->eliminar_por_importacion($id);
+
+        // Eliminar la importación principal
+        $resultado = $this->importaciones_model->eliminar('importaciones', ['id' => $id]);
+
+        if ($resultado) {
+            echo json_encode(['resultado' => true, 'mensaje' => 'Importación eliminada correctamente']);
+        } else {
+            echo json_encode(['resultado' => false, 'mensaje' => 'No se pudo eliminar la importación']);
+        }
+    }
 }
 /* Fin del archivo Importaciones.php */
 /* Ubicación: ./application/controllers/Importaciones.php */
