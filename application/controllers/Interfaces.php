@@ -111,6 +111,59 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->proveedores_model->actualizar_batch($tipo, $datos['cotizacion_detalle'], 'id');
             break;
 
+            case 'importaciones':
+                // Obtener datos anteriores de la importación antes de actualizar
+                $importacion_anterior = $this->importaciones_model->obtener('importaciones', ['id' => $id]);
+                
+                // Realizar la actualización
+                $resultado = $this->importaciones_model->actualizar('importaciones', ['id' => $id], $datos);
+                
+                // Registrar en bitácora los campos que fueron modificados
+                if ($resultado) {
+                    $campos_modificados = [];
+                    
+                    // Comparar campos relevantes
+                    $campos_a_comparar = [
+                        'numero_orden_compra' => 'Número de Orden de Compra',
+                        'razon_social' => 'Proveedor',
+                        'contacto_principal' => 'Contacto Principal',
+                        'email_contacto' => 'Email de Contacto',
+                        'telefono_contacto' => 'Teléfono de Contacto',
+                        'pais_origen' => 'País de Origen',
+                        'fecha_estimada_llegada' => 'Fecha Estimada de Llegada',
+                        'bl_awb' => 'BL/AWB',
+                        'importacion_estado_id' => 'Estado',
+                        'moneda_preferida' => 'Moneda',
+                        'valor_total' => 'Valor Total',
+                        'valor_total_cop' => 'Valor Total COP',
+                        'impuestos_dian' => 'Impuestos DIAN',
+                        'valor_trm' => 'Valor TRM',
+                        'requiere_anticipo' => 'Requiere Anticipo',
+                        'porcentaje_anticipo' => 'Porcentaje de Anticipo',
+                        'condiciones_pago' => 'Condiciones de Pago',
+                        'notas_internas' => 'Notas Internas'
+                    ];
+                    
+                    foreach ($campos_a_comparar as $campo => $etiqueta) {
+                        if (isset($datos[$campo]) && isset($importacion_anterior->$campo)) {
+                            // Convertir a string para comparación
+                            $valor_anterior = (string)$importacion_anterior->$campo;
+                            $valor_nuevo = (string)$datos[$campo];
+                            
+                            if ($valor_anterior !== $valor_nuevo) {
+                                $campos_modificados[] = "$etiqueta: '$valor_anterior' → '$valor_nuevo'";
+                            }
+                        }
+                    }
+                    
+                    // Si hubo cambios, registrar en bitácora
+                    if (!empty($campos_modificados)) {
+                        $mensaje = "Se editó una importación. Campos modificados:\n" . implode("\n", $campos_modificados);
+                        registrar_bitacora_importacion($id, $mensaje, $this->session->userdata('usuario_id'));
+                    }
+                }
+            break;
+
             case 'importaciones_bitacora':
                 $resultado = $this->importaciones_model->actualizar('importaciones_bitacora', ['id' => $id], $datos);
             break;
@@ -307,14 +360,47 @@ class Interfaces extends CI_Controller {
             break;
 
             case 'importaciones':
-                //$datos['fecha_creacion'] = date('Y-m-d H:i:s');
-                print json_encode(['resultado' => $this->importaciones_model->crear($datos)]);
+                // Crear la importación
+                $resultado_crear = $this->importaciones_model->crear($datos);
+                
+                // Si la creación fue exitosa, registrar en bitácora
+                if ($resultado_crear && isset($resultado_crear['resultado'])) {
+                    $importacion_id = $resultado_crear['resultado'];
+                    
+                    // Construir mensaje con campos relevantes
+                    $campos_relevantes = [];
+                    if (isset($datos['numero_orden_compra'])) $campos_relevantes[] = "Orden de Compra: {$datos['numero_orden_compra']}";
+                    if (isset($datos['razon_social'])) $campos_relevantes[] = "Proveedor: {$datos['razon_social']}";
+                    if (isset($datos['pais_origen'])) $campos_relevantes[] = "País: {$datos['pais_origen']}";
+                    if (isset($datos['valor_total'])) $campos_relevantes[] = "Valor Total: {$datos['valor_total']}";
+                    if (isset($datos['moneda_preferida'])) $campos_relevantes[] = "Moneda: {$datos['moneda_preferida']}";
+                    
+                    $mensaje = "Se creó una importación.\n" . implode("\n", $campos_relevantes);
+                    registrar_bitacora_importacion($importacion_id, $mensaje, $this->session->userdata('usuario_id'));
+                }
+                
+                print json_encode(['resultado' => $resultado_crear]);
             break;
 
             case 'importaciones_pagos':
                 $datos['fecha_creacion'] = date('Y-m-d H:i:s');
                 
-                print json_encode(['resultado' => $this->importaciones_pagos_model->crear($datos)]);
+                // Crear el pago
+                $resultado_pago = $this->importaciones_pagos_model->crear($datos);
+                
+                // Si la creación fue exitosa y tiene observaciones que indican que es un pago automático
+                if ($resultado_pago && isset($datos['importacion_id'])) {
+                    $es_pago_automatico = isset($datos['observaciones']) && 
+                                         strpos($datos['observaciones'], 'automáticamente') !== false;
+                    
+                    if ($es_pago_automatico) {
+                        // Registrar en bitácora de la importación
+                        $mensaje = "Se creó un pago automático. {$datos['observaciones']}";
+                        registrar_bitacora_importacion($datos['importacion_id'], $mensaje, $this->session->userdata('usuario_id'));
+                    }
+                }
+                
+                print json_encode(['resultado' => $resultado_pago]);
             break;
 
             case 'recibos_cuentas_bancarias':
