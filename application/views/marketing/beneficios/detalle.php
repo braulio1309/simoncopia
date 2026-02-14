@@ -20,8 +20,8 @@ if (isset($id)) {
                         <label for="beneficio_tipo">Tipo *</label>
                         <select id="beneficio_tipo" class="form-control">
                             <option value="">Seleccione...</option>
-                            <option value="promoción" <?php echo (isset($beneficio) && $beneficio->tipo == 'promoción' ? 'selected' : ''); ?>>Promoción</option>
-                            <option value="código descuento" <?php echo (isset($beneficio) && $beneficio->tipo == 'código descuento' ? 'selected' : ''); ?>>Código descuento</option>
+                            <option value="promoción" <?php echo (isset($beneficio) && $beneficio->beneficio_tipo == 'promoción' ? 'selected' : ''); ?>>Promoción</option>
+                            <option value="código descuento" <?php echo (isset($beneficio) && $beneficio->beneficio_tipo == 'código descuento' ? 'selected' : ''); ?>>Código descuento</option>
                         </select>
                     </div>
 
@@ -98,7 +98,7 @@ if (isset($id)) {
         let datos = {
             tipo: 'marketing_beneficios',
             nombre: $("#beneficio_nombre").val(),
-            tipo: $("#beneficio_tipo").val(),
+            beneficio_tipo: $("#beneficio_tipo").val(),
             codigo_descuento: $("#codigo_descuento").val(),
             reglas: $("#reglas").val(),
             fecha_inicio: $("#fecha_inicio").val(),

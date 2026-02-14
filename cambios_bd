@@ -834,7 +834,7 @@ CREATE TABLE `marketing_beneficios` (
   `fecha_creacion` datetime NULL,
   `usuario_id` int NULL,
   `nombre` varchar(255) NULL,
-  `tipo` varchar(50) NULL COMMENT 'promoción o código descuento',
+  `beneficio_tipo` varchar(50) NULL COMMENT 'promoción o código descuento',
   `codigo_descuento` varchar(100) NULL,
   `reglas` text NULL,
   `fecha_inicio` date NULL,

@@ -45,7 +45,7 @@
                             <option value="código descuento">Código descuento</option>
                         </select>
                     `,
-                    data: 'tipo'
+                    data: 'beneficio_tipo'
                 },
                 {
                     title: 'Código de descuento',
