@@ -167,6 +167,64 @@ Class Marketing_model extends CI_Model {
                     ->result()
                 ;
                 break;
+
+            case 'marketing_beneficios':
+                $limite = "";
+                if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";
+                if (isset($datos['cantidad']) && isset($datos['indice'])) $limite = "LIMIT {$datos['indice']}, {$datos['cantidad']}";
+
+                // Búsquedas
+                $where  = "WHERE mb.id IS NOT NULL";
+                $having = "HAVING mb.id";
+
+                if(isset($datos['id'])) $where .= " AND mb.id = {$datos['id']} ";
+
+                // Filtros personalizados
+                $filtros_personalizados = isset($datos['filtros_personalizados']) ? $datos['filtros_personalizados']: [];
+
+                // Filtros where
+                if (isset($filtros_personalizados['nombre']) && $filtros_personalizados['nombre'] != '') $where .= " AND mb.nombre LIKE '%{$filtros_personalizados['nombre']}%' ";
+                if (isset($filtros_personalizados['tipo']) && $filtros_personalizados['tipo'] != '') $where .= " AND mb.tipo = '{$filtros_personalizados['tipo']}' ";
+                if (isset($filtros_personalizados['tipo_venta']) && $filtros_personalizados['tipo_venta'] != '') $where .= " AND mb.tipo_venta = '{$filtros_personalizados['tipo_venta']}' ";
+                if (isset($filtros_personalizados['fecha_inicio']) && $filtros_personalizados['fecha_inicio'] != '') $where .= " AND DATE(mb.fecha_inicio) = '{$filtros_personalizados['fecha_inicio']}' ";
+                if (isset($filtros_personalizados['fecha_final']) && $filtros_personalizados['fecha_final'] != '') $where .= " AND DATE(mb.fecha_final) = '{$filtros_personalizados['fecha_final']}' ";
+
+                // Si se realiza una búsqueda
+                if (isset($datos['busqueda']) && $datos['busqueda'] != '') {
+                    // Se divide por palabras
+                    $palabras = explode(' ', trim($datos['busqueda']));
+
+                    // Se recorren las palabras
+                    for ($i = 0; $i < count($palabras); $i++) {
+                        $having .= " AND (";
+                        $having .= " mb.id LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR mb.nombre LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR mb.tipo LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR mb.codigo_descuento LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR mb.tipo_venta LIKE '%{$palabras[$i]}%'";
+                        $having .= ") ";
+
+                        if (($i + 1) < count($palabras)) $having .= " AND ";
+                    }
+                }
+
+                // Ordenamiento
+                $order_by = isset($datos['ordenar']) ? "ORDER BY {$datos['ordenar']}" : "ORDER BY mb.id DESC";
+
+                $sql = " SELECT
+                        mb.*
+                    FROM marketing_beneficios mb
+                    $where
+                    GROUP BY mb.id
+                    $having
+                    $order_by
+                    $limite
+                ";
+
+                if (isset($datos['contar']) && $datos['contar'])  return $this->db->query($sql)->num_rows();
+                if (isset($datos['id'])) return $this->db->query($sql)->row();
+                return $this->db->query($sql)->result();
+                break;
         }
     }
 }

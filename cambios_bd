@@ -828,3 +828,20 @@ CREATE TABLE importaciones_bitacora (
     fecha_creacion DATETIME DEFAULT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- 20260214 Se crea tabla para beneficios de marketing
+CREATE TABLE `marketing_beneficios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `fecha_creacion` datetime NULL,
+  `usuario_id` int NULL,
+  `nombre` varchar(255) NULL,
+  `tipo` varchar(50) NULL COMMENT 'promoción o código descuento',
+  `codigo_descuento` varchar(100) NULL,
+  `reglas` text NULL,
+  `fecha_inicio` date NULL,
+  `fecha_final` date NULL,
+  `presupuesto` decimal(15,2) NULL COMMENT 'Valor máximo del presupuesto',
+  `valor_usado` decimal(15,2) DEFAULT 0.00 COMMENT 'Valor usado del presupuesto',
+  `limite_uso` int NULL COMMENT 'Cantidad de items en promoción',
+  `tipo_venta` varchar(20) NULL COMMENT 'contado o crédito',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

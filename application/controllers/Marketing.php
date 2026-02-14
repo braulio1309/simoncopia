@@ -62,6 +62,29 @@ class Marketing extends MY_Controller
         }
     }
 
+    function beneficios()
+    {
+        if (!$this->session->userdata('usuario_id')) redirect('inicio');
+
+        switch ($this->uri->segment(3)) {
+            case 'crear':
+                $this->data['contenido_principal'] = 'marketing/beneficios/detalle';
+                $this->load->view('core/body', $this->data);
+                break;
+
+            case 'editar':
+                $this->data['id'] = $this->uri->segment(4);
+                $this->data['contenido_principal'] = 'marketing/beneficios/detalle';
+                $this->load->view('core/body', $this->data);
+                break;
+
+            case 'ver':
+                $this->data['contenido_principal'] = 'marketing/beneficios/index';
+                $this->load->view('core/body', $this->data);
+                break;
+        }
+    }
+
     private function importar_campanias_contactos($archivo, $campania_id)
     {
         try {
@@ -228,6 +251,36 @@ class Marketing extends MY_Controller
 
                 // Se obtienen los registros
                 $resultados = $this->marketing_model->obtener("marketing_banners", $datos);
+
+                print json_encode([
+                    "draw" => $this->input->get("draw"),
+                    "recordsTotal" => $total_resultados,
+                    "recordsFiltered" => $total_resultados,
+                    "data" => $resultados
+                ]);
+                break;
+
+            case "beneficios":
+                // Se definen los filtros
+                $datos = [
+                    "contar" => true,
+                    "busqueda" => $busqueda,
+                    "filtros_personalizados" => $this->input->get("filtros_personalizados"),
+                ];
+
+                // De acuerdo a los filtros se obtienen el número de registros filtrados
+                $total_resultados = $this->marketing_model->obtener("marketing_beneficios", $datos);
+
+                // Se quita campo para solo contar los registros
+                unset($datos["contar"]);
+
+                // Se agregan campos para limitar y ordenar
+                $datos["indice"] = $indice;
+                $datos["cantidad"] = $cantidad;
+                if ($ordenar) $datos["ordenar"] = $ordenar;
+
+                // Se obtienen los registros
+                $resultados = $this->marketing_model->obtener("marketing_beneficios", $datos);
 
                 print json_encode([
                     "draw" => $this->input->get("draw"),
