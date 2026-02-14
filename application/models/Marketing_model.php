@@ -189,19 +189,19 @@ Class Marketing_model extends CI_Model {
                 }
                 if (isset($filtros_personalizados['tipo']) && $filtros_personalizados['tipo'] != '') {
                     $tipo_escaped = $this->db->escape_str($filtros_personalizados['tipo']);
-                    $where .= " AND mb.beneficio_tipo = '{$tipo_escaped}' ";
+                    $where .= " AND mb.beneficio_tipo = " . $tipo_escaped . " ";
                 }
                 if (isset($filtros_personalizados['tipo_venta']) && $filtros_personalizados['tipo_venta'] != '') {
                     $tipo_venta_escaped = $this->db->escape_str($filtros_personalizados['tipo_venta']);
-                    $where .= " AND mb.tipo_venta = '{$tipo_venta_escaped}' ";
+                    $where .= " AND mb.tipo_venta = " . $tipo_venta_escaped . " ";
                 }
                 if (isset($filtros_personalizados['fecha_inicio']) && $filtros_personalizados['fecha_inicio'] != '') {
                     $fecha_inicio_escaped = $this->db->escape_str($filtros_personalizados['fecha_inicio']);
-                    $where .= " AND DATE(mb.fecha_inicio) = '{$fecha_inicio_escaped}' ";
+                    $where .= " AND DATE(mb.fecha_inicio) = " . $fecha_inicio_escaped . " ";
                 }
                 if (isset($filtros_personalizados['fecha_final']) && $filtros_personalizados['fecha_final'] != '') {
                     $fecha_final_escaped = $this->db->escape_str($filtros_personalizados['fecha_final']);
-                    $where .= " AND DATE(mb.fecha_final) = '{$fecha_final_escaped}' ";
+                    $where .= " AND DATE(mb.fecha_final) = " . $fecha_final_escaped . " ";
                 }
 
                 // Si se realiza una búsqueda
