@@ -77,6 +77,10 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->marketing_model->actualizar($tipo, ['banner_tipo_id' => $id], $datos);
             break;
 
+            case 'marketing_beneficios':
+                $resultado = $this->marketing_model->actualizar($tipo, ['id' => $id], $datos);
+            break;
+
             case 'productos_metadatos':
                 $datos['fecha_modificacion'] = date("Y-m-d H:i:s");
                 $resultado = $this->productos_model->actualizar($tipo, ['id' => $id], $datos);
@@ -241,6 +245,13 @@ class Interfaces extends CI_Controller {
                 $datos['usuario_id'] = $this->session->userdata('usuario_id');
 
                 print json_encode(['resultado' => $this->marketing_model->crear("marketing_campanias", $datos)]);
+            break;
+
+            case 'marketing_beneficios':
+                $datos['fecha_creacion'] = date('Y-m-d H:i:s');
+                $datos['usuario_id'] = $this->session->userdata('usuario_id');
+
+                print json_encode(['resultado' => $this->marketing_model->crear("marketing_beneficios", $datos)]);
             break;
 
             case 'productos_solicitudes_garantia':
