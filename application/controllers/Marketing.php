@@ -341,6 +341,34 @@ class Marketing extends MY_Controller
         print json_encode(['resultado' => $resultado]);
     }
 
+    /**
+     * extraer_variables_contacto
+     * 
+     * Extrae las variables (variable1 a variable6) de un contacto de campaña
+     * y las retorna como array para ser enviadas en mensajes de WhatsApp.
+     * Solo incluye variables que tengan valores no vacíos.
+     * 
+     * @param object $contacto Objeto con los datos del contacto
+     * @return array Array con los valores de las variables
+     */
+    private function extraer_variables_contacto($contacto)
+    {
+        $parametros = [];
+        
+        if (!$contacto) {
+            return $parametros;
+        }
+        
+        for ($i = 1; $i <= 6; $i++) {
+            $campo_variable = "variable{$i}";
+            if (isset($contacto->$campo_variable) && !empty($contacto->$campo_variable)) {
+                $parametros[] = $contacto->$campo_variable;
+            }
+        }
+        
+        return $parametros;
+    }
+
     public function enviar_prueba_whatsapp()
     {
         // 1. Validar que sea AJAX
@@ -370,8 +398,17 @@ class Marketing extends MY_Controller
         try {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
 
+            // Intentar obtener variables del contacto si existe en la campaña
+            $contacto = $this->db->get_where('marketing_campanias_contactos', [
+                'campania_id' => $campania_id,
+                'telefono' => $numero_telefonico
+            ])->row();
+
+            // Preparar variables dinámicas desde la base de datos
+            $parametros = $this->extraer_variables_contacto($contacto);
+
             // $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, 'https://i0.wp.com/devimed.com.co/wp-content/uploads/2023/03/devimed.png');
-            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, 'es_CO', $ruta_imagen);
+            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, 'es_CO', $ruta_imagen, $parametros);
 
             if ($resultado) {
                 echo json_encode(['exito' => true, 'mensaje' => 'Enviado']);
@@ -442,8 +479,11 @@ class Marketing extends MY_Controller
         foreach ($contactos as $contacto) {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
 
+            // Preparar variables dinámicas desde la base de datos
+            $parametros = $this->extraer_variables_contacto($contacto);
+
             // $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, 'https://i0.wp.com/devimed.com.co/wp-content/uploads/2023/03/devimed.png');
-            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($contacto->telefono, $plantilla, 'es_CO', $ruta_imagen);
+            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($contacto->telefono, $plantilla, 'es_CO', $ruta_imagen, $parametros);
             $envio_exitoso = false;
 
             if (is_array($resultado)) {
