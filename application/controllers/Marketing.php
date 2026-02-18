@@ -344,8 +344,8 @@ class Marketing extends MY_Controller
     /**
      * extraer_variables_contacto
      * 
-     * Función privada que extrae las variables (variable1 a variable6) de un contacto
-     * de campaña y las retorna como array para ser enviadas en mensajes de WhatsApp.
+     * Extrae las variables (variable1 a variable6) de un contacto de campaña
+     * y las retorna como array para ser enviadas en mensajes de WhatsApp.
      * Solo incluye variables que tengan valores no vacíos.
      * 
      * @param object $contacto Objeto con los datos del contacto
