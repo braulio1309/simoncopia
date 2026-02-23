@@ -84,6 +84,26 @@ class Logistica extends MY_Controller {
                 $this->data['contenido_principal'] = 'logistica/pedidos/index';
                 $this->load->view('core/body', $this->data);
                 break;
+
+            case 'reglas_facturacion':
+                switch ($this->uri->segment(4)) {
+                    case 'ver':
+                        $this->data['contenido_principal'] = 'logistica/pedidos/reglas_facturacion/index';
+                        $this->load->view('core/body', $this->data);
+                        break;
+
+                    case 'crear':
+                        $this->data['contenido_principal'] = 'logistica/pedidos/reglas_facturacion/detalle';
+                        $this->load->view('core/body', $this->data);
+                        break;
+
+                    case 'editar':
+                        $this->data['id'] = $this->uri->segment(5);
+                        $this->data['contenido_principal'] = 'logistica/pedidos/reglas_facturacion/detalle';
+                        $this->load->view('core/body', $this->data);
+                        break;
+                }
+                break;
         }
     }
 
@@ -110,6 +130,36 @@ class Logistica extends MY_Controller {
         }
 
         switch ($tipo) {
+            case "facturacion_reglas":
+                // Se definen los filtros
+                $datos = [
+                    "contar" => true,
+                    "busqueda" => $busqueda,
+                    "filtros_personalizados" => $this->input->get('filtros_personalizados'),
+                ];
+
+                // De acuerdo a los filtros se obtienen el número de registros filtrados
+                $total_resultados = $this->logistica_model->obtener("facturacion_reglas", $datos);
+
+                // Se quita campo para solo contar los registros
+                unset($datos["contar"]);
+
+                // Se agregan campos para limitar y ordenar
+                $datos["indice"] = $indice;
+                $datos["cantidad"] = $cantidad;
+                if ($ordenar) $datos["ordenar"] = $ordenar;
+
+                // Se obtienen los registros
+                $resultados = $this->logistica_model->obtener("facturacion_reglas", $datos);
+
+                print json_encode([
+                    "draw" => $this->input->get("draw"),
+                    "recordsTotal" => $total_resultados,
+                    "recordsFiltered" => $total_resultados,
+                    "data" => $resultados
+                ]);
+            break;
+
             case "pedidos":
                 // Se definen los filtros
                 $datos = [

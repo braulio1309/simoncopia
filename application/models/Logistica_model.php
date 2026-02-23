@@ -9,6 +9,18 @@ Class Logistica_model extends CI_Model {
         }
     }
 
+    function actualizar($tabla, $condiciones, $datos){
+        return $this->db->where($condiciones)->update($tabla, $datos);
+    }
+
+    function eliminar($tipo, $datos) {
+        switch ($tipo) {
+            default:
+                return $this->db->delete($tipo, $datos);
+            break;
+        }
+    }
+
     /**
 	 * Permite obtener registros de la base de datos
 	 * los cuales se retornar a las vistas
@@ -18,6 +30,63 @@ Class Logistica_model extends CI_Model {
 	 */
 	function obtener($tabla, $datos = null) {
 		switch ($tabla) {
+            case 'facturacion_reglas':
+                $limite = "";
+                if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";
+                if (isset($datos['cantidad']) && isset($datos['indice'])) $limite = "LIMIT {$datos['indice']}, {$datos['cantidad']}";
+
+                // Búsqueda
+                $busquedas = (isset($datos['busqueda'])) ? $datos['busqueda'] : null;
+                $filtros_where = "WHERE fr.id IS NOT NULL";
+
+                // Si se realiza una búsqueda
+                if ($busquedas && $busquedas != "") {
+                    $palabras = explode(" ", trim($busquedas));
+                    for ($i = 0; $i < count($palabras); $i++) {
+                        $filtros_where .= " AND (";
+                        $filtros_where .= " fr.id LIKE '%{$palabras[$i]}%'";
+                        $filtros_where .= " OR fr.cliente_nit LIKE '%{$palabras[$i]}%'";
+                        $filtros_where .= " OR fr.nombre LIKE '%{$palabras[$i]}%'";
+                        $filtros_where .= " OR fr.tipo_frecuencia LIKE '%{$palabras[$i]}%'";
+                        $filtros_where .= ") ";
+                    }
+                }
+
+                // Filtros personalizados
+                $filtros_personalizados = isset($datos['filtros_personalizados']) ? $datos['filtros_personalizados'] : [];
+                if (isset($filtros_personalizados['cliente_nit']) && $filtros_personalizados['cliente_nit'] != '') $filtros_where .= " AND fr.cliente_nit LIKE '%{$filtros_personalizados['cliente_nit']}%' ";
+                if (isset($filtros_personalizados['nombre']) && $filtros_personalizados['nombre'] != '') $filtros_where .= " AND fr.nombre LIKE '%{$filtros_personalizados['nombre']}%' ";
+                if (isset($filtros_personalizados['tipo_frecuencia']) && $filtros_personalizados['tipo_frecuencia'] != '') $filtros_where .= " AND fr.tipo_frecuencia = '{$filtros_personalizados['tipo_frecuencia']}' ";
+                if (isset($filtros_personalizados['activa']) && $filtros_personalizados['activa'] !== '') $filtros_where .= " AND fr.activa = {$filtros_personalizados['activa']} ";
+
+                // Se aplica el filtro por id
+                if (isset($datos['id'])) $filtros_where .= " AND fr.id = {$datos['id']} ";
+
+                $order_by = (isset($datos['ordenar'])) ? "ORDER BY {$datos['ordenar']}" : "ORDER BY fr.fecha_creacion DESC";
+
+                $sql =
+                "SELECT
+                    fr.id,
+                    fr.cliente_nit,
+                    fr.nombre,
+                    fr.tipo_frecuencia,
+                    fr.dia_semana,
+                    fr.dia_mes,
+                    fr.hora_programada,
+                    fr.activa,
+                    fr.requiere_orden_compra,
+                    DATE(fr.fecha_creacion) fecha_creacion,
+                    DATE(fr.fecha_modificacion) fecha_modificacion
+                FROM facturacion_reglas fr
+                $filtros_where
+                $order_by
+                $limite";
+
+                if (isset($datos['contar']) && $datos['contar']) return $this->db->query($sql)->num_rows();
+                if (isset($datos['id'])) return $this->db->query($sql)->row();
+                return $this->db->query($sql)->result();
+            break;
+
             case 'pedidos':
                 $limite = "";
                 if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";
