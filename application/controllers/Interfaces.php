@@ -115,6 +115,10 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->marketing_model->actualizar($tipo, ['id' => $id], $datos);
             break;
 
+            case 'facturacion_reglas':
+                $resultado = $this->logistica_model->actualizar($tipo, ['id' => $id], $datos);
+            break;
+
             default:
                 if(isset($datos['clave'])) $datos['clave'] = sha1($datos['clave']);
 
@@ -595,6 +599,10 @@ class Interfaces extends CI_Controller {
                 $datos['fecha_creacion'] = date('Y-m-d H:i:s');
                 print json_encode(['resultado' => $this->importaciones_model->crear($datos, 'importaciones_bitacora')]);
             break;
+
+            case 'facturacion_reglas':
+                print json_encode(['resultado' => $this->logistica_model->crear($tipo, $datos)]);
+            break;
         }
     }
 
@@ -648,6 +656,10 @@ class Interfaces extends CI_Controller {
                 $this->db->delete('importaciones_pagos', ['importacion_id' => $datos['id']]);
                 
                 print json_encode(['resultado' => $this->importaciones_model->eliminar('importaciones', $datos)]);
+            break;
+
+            case 'facturacion_reglas':
+                print json_encode(['resultado' => $this->logistica_model->eliminar($tipo, $datos)]);
             break;
         }
     }
