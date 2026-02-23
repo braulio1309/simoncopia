@@ -163,7 +163,7 @@ class Proveedores extends MY_Controller {
         }
 
         switch ($tipo) {
-            case "api_cuentas_por_pagar":
+            case "erp_cuentas_por_pagar":
                 // Se definen los filtros
                 $datos = [
                     "contar" => true,
@@ -174,7 +174,7 @@ class Proveedores extends MY_Controller {
                 $datos['nit'] = $this->input->get("numero_documento");
 
                 // De acuerdo a los filtros se obtienen el número de registros filtrados
-                $total_resultados = $this->proveedores_model->obtener("api_cuentas_por_pagar", $datos);
+                $total_resultados = $this->proveedores_model->obtener("erp_cuentas_por_pagar", $datos);
 
                 // Se quita campo para solo contar los registros
                 unset($datos["contar"]);
@@ -185,7 +185,7 @@ class Proveedores extends MY_Controller {
                 if ($ordenar) $datos["ordenar"] = $ordenar;
 
                 // Se obtienen los registros
-                $resultados = $this->proveedores_model->obtener("api_cuentas_por_pagar", $datos);
+                $resultados = $this->proveedores_model->obtener("erp_cuentas_por_pagar", $datos);
             break;
 
             case "proveedores_marcas":

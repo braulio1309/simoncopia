@@ -68,8 +68,8 @@
             allowOutsideClick: false
         })
 
-        // Ejecución del webhook que extrae los datos del WMS
-        await fetch(`${$("#site_url").val()}webhooks/importar_movimientos_contables_api/${numeroDocumento.val()}`)
+        // Ejecución del webhook que extrae los datos del ERP
+        await fetch(`${$("#site_url").val()}tareas/erp/importar_movimientos_contables/${numeroDocumento.val()}`)
             .then(respuesta => respuesta.json())
             .catch(error => console.error(error))
 

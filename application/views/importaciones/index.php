@@ -106,8 +106,6 @@ if(isset($parametros['busqueda'])) echo "<input type='hidden' id='filtro_busqued
         var orden = $('#view-option-sort').val();
         if (orden) datos.ordenar_por = orden;
 
-        console.log("Enviando a buscar:", datos.busqueda); // Revisa esto en la consola (F12)
-
         // 5. Feedback visual y carga
         $('#contenedor_importaciones').html('<div class="text-center p-5"><i class="fa fa-spinner fa-spin fa-3x"></i><p>Buscando...</p></div>');
         

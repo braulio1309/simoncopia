@@ -326,7 +326,9 @@ class Clientes extends MY_Controller {
      */
     function subir_certificado() {
         $id = $this->uri->segment(3);
+        $tipo_retencion = $this->uri->segment(4);
         $exito = false;
+        $anio = date('Y') - 1; // Año anterior
 
         // Se consulta información del certificado para construir el nombre del archivo
         $certificado = $this->clientes_model->obtener('clientes_retenciones_detalle', ['id' => $id]);
@@ -345,7 +347,8 @@ class Clientes extends MY_Controller {
         }
 
         // Crear directorio si no existe
-        $directorio = "./archivos/certificados_retencion/$id/";
+        $directorio = "{$this->config->item('ruta_archivo_digitalizado')}/15. CERTIFICADOS DE RETENCION/$anio/$tipo_retencion";
+
         if (!is_dir($directorio)) @mkdir($directorio, 0777, true);
 
         $archivo = $_FILES['archivo'];
@@ -370,7 +373,7 @@ class Clientes extends MY_Controller {
         $nombre_archivo = "{$cliente->nit}_{$razon_social}_{$monto_formateado}.{$extension}";
 
         // Subir archivo
-        if (move_uploaded_file($archivo['tmp_name'], $directorio . $nombre_archivo)) {
+        if (move_uploaded_file($archivo['tmp_name'], "$directorio/$nombre_archivo")) {
             $exito = true;
             $mensaje = "El archivo <b>{$nombre_archivo}</b> se subió correctamente.";
         } else {

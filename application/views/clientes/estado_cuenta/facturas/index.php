@@ -72,7 +72,7 @@
 
         <div class="row">
             <div class="col-lg-6 col-sm-12">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-1 mt-1">Facturas pendientes de pago</div>
+                <div class="tag-badge tag-badge--new badge_formulario mb-1 mt-1">Facturas pendientes de pago</div>
             </div>
 
             <?php if($datos['nit_comprobante']) { ?>
@@ -117,6 +117,44 @@
                 </div>
             </div>
         <?php } else { ?>
+            <!-- Pagar con todos los medios de pago -->
+            <div class="form-check mb-3">
+                <span class="input-check form-check-input">
+                    <span class="input-check__body">
+                        <input class="input-check__input" type="radio" name="metodo_pago" id="pago_todos" checked>
+                        <span class="input-check__box"></span>
+                        <span class="input-check__icon">
+                            <svg width="9px" height="7px">
+                                <path d="M9,1.395L3.46,7L0,3.5L1.383,2.095L3.46,4.2L7.617,0L9,1.395Z" />
+                            </svg>
+                        </span>
+                    </span>
+                </span>
+                <label class="form-check-label" for="pago_todos">
+                    Pagar con PSE, Nequi y tarjetas de crédito
+                </label><br>
+                <img src="<?php echo base_url(); ?>images/formas_pago.webp" alt="Todos los medios de pago" height="60" class="mt-3">
+            </div>
+
+            <!-- Compra ahora y paga después -->
+            <div class="form-check mb-3">
+                <span class="input-check form-check-input">
+                    <span class="input-check__body">
+                        <input class="input-check__input" type="radio" name="metodo_pago" id="pagos_sumas">
+                        <span class="input-check__box"></span>
+                        <span class="input-check__icon">
+                            <svg width="9px" height="7px">
+                                <path d="M9,1.395L3.46,7L0,3.5L1.383,2.095L3.46,4.2L7.617,0L9,1.395Z" />
+                            </svg>
+                        </span>
+                    </span>
+                </span>
+                <label class="form-check-label" for="pagos_sumas">
+                    Compra ahora - Paga después
+                </label><br>
+                <img src="<?php echo base_url(); ?>images/sumas.webp" alt="Formas de pago" height="60" class="mt-3">
+            </div>
+
             <button class="btn btn-primary btn-lg btn-block" id="btn_pago_en_linea">Realizar pago en línea</button>
         <?php } ?>
 
@@ -286,8 +324,10 @@
             }, false)
 
             if (reciboItems.resultado) {
+                let tipoPago = ($(`#pago_todos`).is(':checked')) ? 'gateway' : 'agregador'
+
                 // Si es pago en línea, redirecciona a Wompi
-                if(pagarEnLinea) cargarInterfaz('clientes/estado_cuenta/carrito/pago', 'contenedor_pago_estado_cuenta', {id: recibo.resultado})
+                if(pagarEnLinea) cargarInterfaz('clientes/estado_cuenta/carrito/pago', 'contenedor_pago_estado_cuenta', {id: recibo.resultado, tipo_pago: tipoPago})
 
                 // Si es para subir comprobante
                 if(!pagarEnLinea) {

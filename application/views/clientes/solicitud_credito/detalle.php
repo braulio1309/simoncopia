@@ -71,8 +71,8 @@ if (isset($datos['id'])) {
                 </div>
                 <div class="card-divider"></div>
 
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2 mt-2">
-                    DATOS BÁSICOS DEL SOLICITANTE
+                <div class="tag-badge tag-badge--new badge_formulario mb-2 mt-2">
+                    Datos básicos del solicitante
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-4">
@@ -173,8 +173,8 @@ if (isset($datos['id'])) {
                         <input type="number" class="form-control" id="solicitud_cantidad_vehiculos" value="<?php if(isset($solicitud)) echo $solicitud->cantidad_vehiculos; ?>">
                     </div>
                 </div>
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2 mt-2">
-                    DATOS REPRESENTANTE LEGAL
+                <div class="tag-badge tag-badge--new badge_formulario mb-2 mt-2">
+                    Datos representante legal
                 </div>
                 <div class="form-row datos_persona_juridica">
                     <div class="form-group col-md-6">
@@ -201,8 +201,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    PERSONAS DE CONTACTO
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    Personas de contacto
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-2">
@@ -267,8 +267,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    REFERENCIAS COMERCIALES
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    Referencias comerciales
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-1">
@@ -308,8 +308,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1" id="personas_autorizadas">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    PERSONAS AUTORIZADAS
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    Personas autorizadas
                 </div>
                 <small>(personas a quiénes autorizas para brindar información de tu cuenta)</small>
 
@@ -350,8 +350,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1 datos_persona_juridica" id="clientes">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    SAGRILAFT FORMULARIO DE CONOCIMIENTO DE CLIENTES
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    SAGRILAFT - Formulario de conocimiento de clientes
                 </div>
 
                 <div class="card-header">
@@ -405,8 +405,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1 datos_persona_juridica" id="beneficiarios_cliente">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    BENEFICIARIOS FINALES DE SOCIOS Y/O ACCIONISTAS IGUALES O SUPERIORES AL 5%
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    Beneficiarios finales de socios y/o accionistas iguales o superiores al 5%
                 </div>
                 <small>(Solo para personas jurídicas)</small>
 
@@ -457,8 +457,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    PERSONA POLÍTICAMENTE EXPUESTA
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    Persona Políticamente Expuesta (PEP)
                 </div>
                 <div class="form-row">
                     <div class="col-md-6">
@@ -572,8 +572,8 @@ if (isset($datos['id'])) {
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2">
-                    INFORMACIÓN FINANCIERA (EN PESOS)
+                <div class="tag-badge tag-badge--new badge_formulario mb-2">
+                    Información financiera (en pesos)
                 </div>
 
                 <div class="form-row">
@@ -614,7 +614,7 @@ if (isset($datos['id'])) {
             <div class="card-body card-body--padding--1">
                 <!-- Si es una solicitud nueva -->
                 <?php  if (!isset($datos['id'])) { ?>
-                    <div class="tag-badge tag-badge--theme badge_formulario mb-2">
+                    <div class="tag-badge tag-badge--new badge_formulario mb-2">
                         Documentos requeridos
                     </div>
                     <div class="container">

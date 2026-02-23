@@ -19,7 +19,6 @@ class Importaciones_pagos_model extends CI_Model {
         
         // Ordenar por fecha de creación descendente
         $this->db->order_by('id', 'DESC');
-        
         return $this->db->get()->result();
     }
 

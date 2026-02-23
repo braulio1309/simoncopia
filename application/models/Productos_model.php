@@ -221,6 +221,7 @@ Class Productos_model extends CI_Model{
                     pm.palabras_clave,
                     pm.detalles_tecnicos,
                     pm.descripcion descripcion,
+                    pm.garantia,
                     i.existencia,
                     IF(MIN(i.disponible) = 0, MAX(i.disponible), MIN(i.disponible)) disponible,
                     i.bodega,

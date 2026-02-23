@@ -154,7 +154,7 @@
                         Un desarrollo de <a href="https://johnarleycano.com" target="_blank">John Arley Cano</a> - <?php echo "Versión ".exec('git describe --tags'); ?>
                     </div>
                     <div class="site-footer__payments">
-                        <img src="<?php echo base_url(); ?>images/formas_pago.png" alt="Formas de pago" width="320">
+                        <img src="<?php echo base_url(); ?>images/formas_pago_wompi.png" alt="Formas de pago" width="320">
                     </div>
                 </div>
             </div>

@@ -24,7 +24,7 @@ class Reportes extends MY_Controller {
     function __construct() {
         parent::__construct();
 
-        $this->load->model(['clientes_model', 'proveedores_model']);
+        $this->load->model(['clientes_model', 'proveedores_model', 'contabilidad_model']);
         header('Content-type: application/json');
     }
 
@@ -192,6 +192,11 @@ class Reportes extends MY_Controller {
 
     function excel() {
         switch ($this->uri->segment(3)) {
+            case 'consecutivos_detalle':
+                $this->data["comprobante_contable_tarea_id"] = $this->uri->segment(4);
+                $this->load->view('reportes/excel/consecutivos_detalle', $this->data);
+            break;
+
             case 'facturas':
                 $this->data["numero_documento"] = $this->uri->segment(4);
                 $this->load->view('reportes/excel/facturas', $this->data);

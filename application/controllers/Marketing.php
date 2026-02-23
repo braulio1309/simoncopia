@@ -62,53 +62,309 @@ class Marketing extends MY_Controller
         }
     }
 
-    private function importar_campanias_contactos($archivo, $campania_id)
+    /**
+     * duplicar_campania
+     * 
+     * Duplica una campaña de marketing junto con sus contactos pendientes.
+     * 
+     * Crea una nueva campaña con la misma información de la campaña original,
+     * agregando al nombre el texto "copia" y la fecha de creación.
+     * 
+     * Solo se duplican los contactos cuya fecha de envío esté vacía o sea NULL.
+     */
+    public function duplicar_campania()
     {
-        try {
-            $excel  = PhpOffice\PhpSpreadsheet\IOFactory::load($archivo);
-            $hoja   = $excel->getActiveSheet();
-            $registros = $hoja->toArray();
+        $id_campania = $this->input->post('campania_id');
 
-            // Se elimina la primera fila (encabezados)
-            unset($registros[0]);
+        if (!$id_campania) {
+            echo json_encode([
+                "exito" => false,
+                "mensaje" => "ID de campaña inválido"
+            ]);
+            return;
+        }
 
-            $detalle = [];
+        // Obtener campaña original
+        $campania = $this->marketing_model->obtener( "marketing_campanias", ["id" => $id_campania]);
 
-            foreach ($registros as $registro) {
-                // Validar que existan datos
-                if (empty($registro[0]) && empty($registro[1])) {
-                    continue;
-                }
+        if (!$campania) {
+            echo json_encode([
+                "exito" => false,
+                "mensaje" => "La campaña no existe"
+            ]);
+            return;
+        }
 
-                $detalle[] = [
-                    "fecha_creacion" => date('Y-m-d H:i:s'),
-                    "campania_id" => $campania_id,
-                    "nit"         => trim($registro[0]),
-                    "telefono"    => trim($registro[1])
+        // Variables reutilizables
+        $fecha_creacion = date("Y-m-d H:i:s");
+        $nombre_nuevo   = "$campania->nombre - copia $fecha_creacion";
+
+        // Crear nueva campaña
+        $nueva_campania = [
+            "fecha_creacion" => $fecha_creacion,
+            "usuario_id" => $this->session->userdata('usuario_id'),
+            "fecha_inicio" => $campania->fecha_inicio,
+            "nombre" => $nombre_nuevo,
+            "descripcion" => $campania->descripcion,
+            "nombre_plantilla_whatsapp" => $campania->nombre_plantilla_whatsapp,
+            "nombre_imagen" => $campania->nombre_imagen
+        ];
+
+        $nuevo_id = $this->marketing_model->crear(
+            "marketing_campanias",
+            $nueva_campania
+        );
+
+        if (!$nuevo_id) {
+            echo json_encode([
+                "exito" => false,
+                "mensaje" => "No se pudo crear la campaña"
+            ]);
+            return;
+        }
+
+        // Se duplica la imagen según la original
+        $ruta_origen = "{$this->ruta}campanias/{$id_campania}/";
+        $ruta_destino = "{$this->ruta}campanias/{$nuevo_id}/";
+
+        // Verificar si existe carpeta de la campaña original
+        if (is_dir($ruta_origen)) {
+
+            // Crear carpeta destino si no existe
+            if (!is_dir($ruta_destino)) mkdir($ruta_destino, 0777, true);
+
+            // Buscar imagen
+            $imagenes = glob($ruta_origen . "*.{jpg,jpeg,png}", GLOB_BRACE);
+
+            if (!empty($imagenes)) {
+                $imagen_origen = $imagenes[0];
+                $nombre_imagen = basename($imagen_origen);
+
+                // Copiar imagen
+                copy($imagen_origen, "{$ruta_destino}{$nombre_imagen}");
+            }
+        }
+
+        // Obtener TODOS los contactos 
+        $contactos = $this->marketing_model->obtener("marketing_campanias_contactos", ["campania_id" => $id_campania]);
+
+        if (!empty($contactos)) {
+            $batch = [];
+
+            foreach ($contactos as $contacto) {
+                $batch[] = [
+                    "fecha_creacion" => $fecha_creacion,
+                    "campania_id" => $nuevo_id,
+                    "telefono" => $contacto->telefono,
+                    "nit" => $contacto->nit,
+                    "fecha_envio" => null 
                 ];
             }
 
-            // Inserción batch
-            if (!empty($detalle)) $this->marketing_model->insertar_batch("marketing_campanias_contactos", $detalle);
+            $this->marketing_model->insertar_batch("marketing_campanias_contactos", $batch);
+        }
+
+        echo json_encode([
+            "exito"       => true,
+            "mensaje"     => "Campaña duplicada correctamente",
+            "id_original" => $id_campania,
+            "id_copia"    => $nuevo_id
+        ]);
+    }
+
+    function beneficios()
+    {
+        if (!$this->session->userdata('usuario_id')) redirect('inicio');
+        
+        switch ($this->uri->segment(3)) {
+            case 'crear':
+                $this->data['contenido_principal'] = 'marketing/beneficios/detalle';
+                $this->load->view('core/body', $this->data);
+                break;
+            case 'editar':
+                $this->data['id'] = $this->uri->segment(4);
+                $this->data['contenido_principal'] = 'marketing/beneficios/detalle';
+                $this->load->view('core/body', $this->data);
+                break;
+            case 'ver':
+                $this->data['contenido_principal'] = 'marketing/beneficios/index';
+                $this->load->view('core/body', $this->data);
+                break;
+        }
+    }
+    /**
+     * eliminar_campania
+     *
+     * Elimina una campaña de marketing junto con:
+     * - Imagen asociada
+     * - Contactos de la campaña
+     * - Registro de la campaña
+     */
+    public function eliminar_campania()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $campania_id = $this->input->post('campania_id');
+
+        if (!$campania_id) {
+            echo json_encode([
+                'exito' => false,
+                'mensaje' => 'ID de campaña no recibido'
+            ]);
+            return;
+        }
+
+        // Verificar campaña
+        $campania = $this->marketing_model->obtener('marketing_campanias', ['id' => $campania_id]);
+
+        if (!$campania) {
+            echo json_encode([
+                'exito' => false,
+                'mensaje' => 'La campaña no existe'
+            ]);
+            return;
+        }
+
+        // Se elimina la imagen
+        $ruta_campania = $this->ruta . 'campanias/' . $campania_id;
+
+        if (is_dir($ruta_campania)) {
+            $archivos = scandir($ruta_campania);
+
+            foreach ($archivos as $archivo) {
+                if ($archivo !== '.' && $archivo !== '..') {
+                    $ruta_archivo = $ruta_campania . '/' . $archivo;
+
+                    if (is_file($ruta_archivo)) {
+                        unlink($ruta_archivo);
+                    }
+                }
+            }
+
+            rmdir($ruta_campania);
+        }
+
+        // Se eliminan los contactos asociados
+        $this->marketing_model->eliminar('marketing_campanias_contactos', ['campania_id' => $campania_id]);
+
+        // Se elimina registro de la campaña en base de datos
+        $this->marketing_model->eliminar('marketing_campanias', ['id' => $campania_id]);
+
+        // Se agrega el log correspondiente a la eliminación
+        $this->configuracion_model->crear('logs', [
+            'log_tipo_id' => 109,
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+            'observacion' => json_encode([
+                'accion' => 'Registro eliminado',
+                'campania_id' => $campania_id
+            ]),
+        ]);
+
+        echo json_encode([
+            'exito' => true,
+            'mensaje' => 'Campaña eliminada correctamente'
+        ]);
+    }
+
+    /**
+     * importar_campanias_contactos
+     *
+     * Importa y reemplaza los contactos de una campaña desde un archivo Excel.
+     *
+     * Lee la hoja activa del archivo, omite la fila de encabezados y registra
+     * los contactos asociados a la campaña indicada.
+     *
+     * Si la campaña no tiene envíos realizados, se eliminan previamente
+     * todos los contactos existentes y se cargan únicamente los contactos
+     * del archivo importado.
+     *
+     * Durante la importación se validan los teléfonos para evitar duplicados
+     * dentro del mismo archivo.
+     *
+     * Cada fila del archivo debe contener el NIT y el número de teléfono.
+     */
+    private function importar_campanias_contactos($archivo, $campania_id)
+    {
+        try {
+            // Validar campaña sin envíos
+            $campania = $this->marketing_model->obtener('marketing_campanias', ['id' => $campania_id]);
+
+            if (!$campania || $campania->cantidad_envios > 0) {
+                return [
+                    'exito' => false,
+                    'mensaje' => 'La campaña ya tiene envíos realizados. No se pueden reemplazar los contactos.'
+                ];
+            }
+
+            // Eliminar contactos existentes
+            $this->marketing_model->eliminar('marketing_campanias_contactos', ['campania_id' => $campania_id]);
+
+            // Leer Excel
+            $excel  = PhpOffice\PhpSpreadsheet\IOFactory::load($archivo);
+            $hoja   = $excel->getActiveSheet();
+            $filas  = $hoja->toArray();
+
+            unset($filas[0]); // Se salta el encabezado
+
+            $telefonos_excel = [];
+            $detalle = [];
+
+            foreach ($filas as $fila) {
+                $nit        = trim($fila[0] ?? '');
+                $telefono   = trim($fila[1] ?? '');
+                $variable_1 = trim($fila[2] ?? '');
+                $variable_2 = trim($fila[3] ?? '');
+                $variable_3 = trim($fila[4] ?? '');
+                $variable_4 = trim($fila[5] ?? '');
+                $variable_5 = trim($fila[6] ?? '');
+                $variable_6 = trim($fila[7] ?? '');
+
+                if ($nit === '' || $telefono === '') continue;
+
+                // Evitar duplicados dentro del mismo archivo
+                if (in_array($telefono, $telefonos_excel)) continue;
+
+                $telefonos_excel[] = $telefono;
+
+                $detalle[] = [
+                    'fecha_creacion' => date('Y-m-d H:i:s'),
+                    'campania_id'    => $campania_id,
+                    'nit'            => $nit,
+                    'telefono'       => $telefono,
+                    'variable_1'     => $variable_1,
+                    'variable_2'     => $variable_2,
+                    'variable_3'     => $variable_3,
+                    'variable_4'     => $variable_4,
+                    'variable_5'     => $variable_5,
+                    'variable_6'     => $variable_6
+                ];
+            }
+
+            if (!empty($detalle)) $this->marketing_model->insertar_batch('marketing_campanias_contactos', $detalle);
 
             return [
-                "exito" => true,
-                "mensaje" => "Se subieron e importaron correctamente los contactos de la campaña"
+                'exito' => true,
+                'mensaje' => 'Contactos reemplazados correctamente.'
             ];
-        } catch (Exception $e) {
 
-            log_message(
-                'error',
-                'Error al importar contactos de campaña: ' . $e->getMessage()
-            );
+        } catch (Exception $e) {
+            log_message('error', 'Error al importar contactos: ' . $e->getMessage());
 
             return [
-                "exito" => false,
-                "mensaje" => "No se subieron ni importaron correctamente los contactos de la campaña"
+                'exito' => false,
+                'mensaje' => 'Error al importar los contactos'
             ];
         }
     }
 
+    /**
+     * importar_campanias
+     * 
+     * Recibe y procesa un archivo de contactos para una campaña de marketing.
+     * 
+     * Sube el archivo a una carpeta temporal, importa los contactos asociados
+     * a la campaña indicada y elimina el archivo una vez finalizado el proceso.
+     */
     function importar_campanias()
     {
         $exito = false;
@@ -207,6 +463,36 @@ class Marketing extends MY_Controller
                 ]);
                 break;
 
+            case "beneficios":
+                // Se definen los filtros
+                $datos = [
+                    "contar" => true,
+                    "busqueda" => $busqueda,
+                    "filtros_personalizados" => $this->input->get("filtros_personalizados"),
+                ];
+
+                // De acuerdo a los filtros se obtienen el número de registros filtrados
+                $total_resultados = $this->marketing_model->obtener("marketing_beneficios", $datos);
+
+                // Se quita campo para solo contar los registros
+                unset($datos["contar"]);
+
+                // Se agregan campos para limitar y ordenar
+                $datos["indice"] = $indice;
+                $datos["cantidad"] = $cantidad;
+                if ($ordenar) $datos["ordenar"] = $ordenar;
+
+                // Se obtienen los registros
+                $resultados = $this->marketing_model->obtener("marketing_beneficios", $datos);
+
+                print json_encode([
+                    "draw" => $this->input->get("draw"),
+                    "recordsTotal" => $total_resultados,
+                    "recordsFiltered" => $total_resultados,
+                    "data" => $resultados
+                ]);
+                break;
+
             case "banners":
                 // Se definen los filtros
                 $datos = [
@@ -228,7 +514,8 @@ class Marketing extends MY_Controller
 
                 // Se obtienen los registros
                 $resultados = $this->marketing_model->obtener("marketing_banners", $datos);
-
+                break;
+                
                 print json_encode([
                     "draw" => $this->input->get("draw"),
                     "recordsTotal" => $total_resultados,
@@ -239,6 +526,15 @@ class Marketing extends MY_Controller
         }
     }
 
+    /**
+     * eliminar_imagen
+     * 
+     * Elimina la imagen asociada a una campaña de marketing.
+     * 
+     * Busca y elimina los archivos de imagen (jpg, jpeg, png) ubicados en la
+     * carpeta de la campaña indicada. Si la carpeta no existe, se considera
+     * la operación como exitosa.
+     */
     public function eliminar_imagen()
     {
         if (!$this->input->is_ajax_request()) redirect('inicio');
@@ -369,10 +665,17 @@ class Marketing extends MY_Controller
 
         try {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
+            
+            $contacto = $this->db->get_where('marketing_campanias_contactos', [
+                'campania_id' => $campania_id,
+                'telefono' => $numero_telefonico
+            ])->row();
+            
+            // Preparar variables dinámicas desde la base de datos
+            $parametros = $this->extraer_variables_contacto($contacto);
 
             // $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, 'https://i0.wp.com/devimed.com.co/wp-content/uploads/2023/03/devimed.png');
-            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, 'es_CO', $ruta_imagen);
-
+            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, 'es_CO', $ruta_imagen, $parametros);
             if ($resultado) {
                 echo json_encode(['exito' => true, 'mensaje' => 'Enviado']);
                 $this->configuracion_model->crear('logs', [
@@ -389,6 +692,24 @@ class Marketing extends MY_Controller
         } catch (Exception $e) {
             echo json_encode(['exito' => false, 'mensaje' => 'Error interno: ' . $e->getMessage()]);
         }
+    }
+
+     private function extraer_variables_contacto($contacto)
+    {
+        $parametros = [];
+        
+        if (!$contacto) {
+            return $parametros;
+        }
+        
+        for ($i = 1; $i <= 6; $i++) {
+            $campo_variable = "variable{$i}";
+            if (isset($contacto->$campo_variable) && !empty($contacto->$campo_variable)) {
+                $parametros[] = $contacto->$campo_variable;
+            }
+        }
+        
+        return $parametros;
     }
 
     public function ejecutar_envio_masivo()
@@ -411,12 +732,6 @@ class Marketing extends MY_Controller
             return;
         }
 
-        // 3. VALIDACIÓN: Verificar vigencia de la campaña
-        $fecha_actual = date('Y-m-d');
-        if ($campania->fecha_finalizacion < $fecha_actual) {
-            echo json_encode(['exito' => false, 'mensaje' => 'La campaña ha finalizado (Fecha fin: ' . $campania->fecha_finalizacion . '). No se pueden enviar más mensajes.']);
-            return;
-        }
 
         $plantilla = $campania->nombre_plantilla_whatsapp;
         if (empty($plantilla)) {
@@ -441,10 +756,10 @@ class Marketing extends MY_Controller
         // 5. Bucle de envío "Uno a Uno"
         foreach ($contactos as $contacto) {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
+            $parametros = $this->extraer_variables_contacto($contacto);
 
             // $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, 'https://i0.wp.com/devimed.com.co/wp-content/uploads/2023/03/devimed.png');
-            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($contacto->telefono, $plantilla, 'es_CO', $ruta_imagen);
-            $envio_exitoso = false;
+            $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($contacto->telefono, $plantilla, 'es_CO', $ruta_imagen, $parametros);            $envio_exitoso = false;
 
             if (is_array($resultado)) {
                 

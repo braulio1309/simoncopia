@@ -1,0 +1,16 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+// Token fijo
+$config['whatsapp_token'] = '';
+
+// Usado para conectar el webhook con la API de Whatsapp
+$config['whatsapp_token_verificacion'] = '';
+
+// Test (Número 3102196923)
+// $config['identificador_numero_telefonico'] = '';
+// $config['identificador_cuenta_whatsapp_business'] = '';
+
+// Principal (Número 3102196923)
+$config['identificador_numero_telefonico'] = '';
+$config['identificador_cuenta_whatsapp_business'] = '';

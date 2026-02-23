@@ -239,6 +239,13 @@ if(empty($producto)) redirect(site_url(''));
                                                 <div class="spec__value"><?php echo nl2br($producto->descripcion); ?></div>
                                             </div>
                                         </div>
+
+                                        <div class="spec__section">
+                                            <h4 class="spec__section-title">Garantía</h4>
+                                            <div class="spec__row">
+                                                <?php echo ($producto->garantia) ? nl2br($producto->garantia) : "Sin información"; ?></div>
+                                            </div>
+                                        </div>
                                         
                                         <div class="spec__disclaimer">
                                             * La información aquí contenida puede variar al momento de la compra

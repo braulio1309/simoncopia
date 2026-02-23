@@ -16,6 +16,7 @@ foreach ($registros as $usuario) { ?>
             </div>
             <div class="wishlist__product-rating">
                 <div class="wishlist__product-rating-title"><?php echo $usuario->documento_numero; ?></div>
+                <div class="wishlist__product-rating-title"><?php if ($usuario->perfil_id == 7) echo "Lista $usuario->lista_precio"; ?></div>
             </div>
         </td>
         <td class="wishlist__column wishlist__column--body wishlist__column--stock">

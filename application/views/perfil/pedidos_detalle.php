@@ -59,7 +59,7 @@
 <div class="row mt-3 no-gutters mx-n2">
     <div class="col-sm-6 col-12 px-2">
         <div class="card address-card address-card--featured">
-            <div class="address-card__badge tag-badge tag-badge--theme">
+            <div class="address-card__badge tag-badge tag-badge--new">
                 Shipping Address
             </div>
             <div class="address-card__body">
@@ -82,7 +82,7 @@
     </div>
     <div class="col-sm-6 col-12 px-2 mt-sm-0 mt-3">
         <div class="card address-card address-card--featured">
-            <div class="address-card__badge tag-badge tag-badge--theme">
+            <div class="address-card__badge tag-badge tag-badge--new">
                 Billing Address
             </div>
             <div class="address-card__body">

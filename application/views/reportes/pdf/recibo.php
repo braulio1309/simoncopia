@@ -3,19 +3,16 @@ use Fpdf\Fpdf;
 
 $recibo = $this->productos_model->obtener('recibo', ['token' => $token]);
 $recibo_cuentas_bancarias = $this->configuracion_model->obtener('recibos_cuentas_bancarias', ['recibo_id' => $recibo->id]);
-$numero_recibo_caja = '';
 $usuario_creacion = '';
 $usuario_aprobacion = '';
 $notas = $recibo->comentarios;
 
 // Temporalemte, se actualiza el recibo con el número de recibo de caja de Siesa
-$this->productos_model->actualizar('recibos', ['id' => $recibo->id], ['numero_siesa' => obtener_numero_recibo_caja($recibo)]);
+if(!$recibo->numero_siesa) $this->productos_model->actualizar('recibos', ['id' => $recibo->id], ['numero_siesa' => obtener_numero_recibo_caja($recibo)]);
 
 $resultado_movimientos = json_decode(obtener_movimientos_contables_api([
     'numero_documento' => $recibo->documento_numero,
-    // 'fecha' => "{$recibo->anio}-{$recibo->mes}-{$recibo->dia}",
-    'notas' => ($recibo->id >= 280) ? "Recibo $recibo->id" : 'Recibo cargado desde la página web por el cliente',
-    'estado' => 1,
+    'notas_parciales' => "Recibo $recibo->id",
 ]));
 
 // Si se encontraron movimientos asociados al recibo
@@ -23,7 +20,7 @@ if($resultado_movimientos->codigo == 0) {
     // Se capturan los datos
     $movimientos = $resultado_movimientos->detalle->Table;
     $consecutivo = str_pad($movimientos[0]->f350_consec_docto, 8, '0', STR_PAD_LEFT);
-    $numero_recibo_caja = "{$movimientos[0]->f350_id_tipo_docto}-{$consecutivo}";
+    // $numero_recibo_caja = "{$movimientos[0]->f350_id_tipo_docto}-{$consecutivo}";
     $usuario_creacion = $movimientos[0]->f350_usuario_creacion;
     $usuario_aprobacion = $movimientos[0]->f350_usuario_aprobacion;
     $notas = $movimientos[0]->f350_notas;
@@ -77,7 +74,7 @@ $pdf->setFillColor($gris['r'], $gris['g'], $gris['b']);
 $pdf->Cell(70, 8, 'RECIBO DE CAJA', 1, 0, 'C', 1);
 $pdf->setXY(130, $pdf->getY() + 8);
 $pdf->SetFont('Arial', 'B', 11);
-$pdf->Cell(70, 8, $numero_recibo_caja, 1, 0, 'C', 0);
+$pdf->Cell(70, 8, $recibo->numero_siesa, 1, 0, 'C', 0);
 $pdf->Ln(25);
 
 // Información del tercero
@@ -183,4 +180,13 @@ $pdf->Cell(60, 5, utf8_decode('Aprobado'), 0, 0, 'C', 0);
 $pdf->Cell(5, 5, '', 0, 0, 'C', 0);
 $pdf->Cell(60, 5, utf8_decode('{Recibido}'), 0, 0, 'C', 0);
 
-$pdf->Output("Recibo.pdf", "I");
+// Si se debe almacenar el archivo
+if(isset($almacenar_archivo)) {
+    // Se construye la ruta donde se va a almacenar el comprobante
+    $ruta = obtener_ruta_documento_contable($recibo);
+
+    // Descarga del archivo
+    $pdf->Output('F', "$ruta/$recibo->numero_siesa.pdf");
+} else {
+    $pdf->Output('I', "Recibo.pdf");
+}

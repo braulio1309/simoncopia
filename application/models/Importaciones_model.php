@@ -16,6 +16,7 @@ class Importaciones_model extends CI_Model
         // Limpiamos el array de datos por si viene basura del JS
         $this->db->insert($tabla, $datos);
 
+
         $resultado = $this->db->affected_rows() > 0;
 
         if ($resultado) {
@@ -152,16 +153,23 @@ class Importaciones_model extends CI_Model
 
             // HELPER: Obtener lista única de Proveedores para llenar el select de filtros
             case 'importaciones_maestro_anticipos':
-
-                $this->db->select('a.*, t.f200_razon_social as proveedor'); // Traemos todo de anticipos y el nombre de terceros
+                // 1. Definición de la consulta base
+                $this->db->select('a.*, t.f200_razon_social as proveedor');
                 $this->db->from('importaciones_maestro_anticipos a');
-                $this->db->join('terceros t', 't.f200_nit = a.nit', 'left'); // Ajusta 'terceros' y los campos si tienen nombres diferentes
+                $this->db->join('terceros t', 't.f200_nit = a.nit', 'left');
 
-                if (isset($datos['id'])) {
+                // 2. Si la petición es para UN solo registro (Ej: abrir un modal de edición)
+                // En este caso sí se permite el return porque no es para la tabla principal
+                if (isset($datos['id']) && !empty($datos['id'])) {
                     $this->db->where('a.id', $datos['id']);
                     return $this->db->get()->row();
                 }
 
+                if (isset($datos['contar']) && $datos['contar'] == true) {
+                    return $this->db->count_all_results();
+                }
+
+                // 3. Filtro de búsqueda (Lógica para DataTables)
                 if (isset($datos['busqueda']) && $datos['busqueda'] != '') {
                     $palabras = explode(' ', trim($datos['busqueda']));
 
@@ -170,13 +178,17 @@ class Importaciones_model extends CI_Model
                         $this->db->like('a.id', $palabra);
                         $this->db->or_like('a.nit', $palabra);
                         $this->db->or_like('a.porcentaje', $palabra);
-                        $this->db->or_like('t.f200_razon_social', $palabra); // Permitir buscar también por el nombre del proveedor
+                        $this->db->or_like('t.f200_razon_social', $palabra);
                     }
                     $this->db->group_end();
                 }
 
+                // 4. Ordenamiento por defecto
                 $this->db->order_by('a.id', 'ASC');
                 return $this->db->get()->result();
+                // IMPORTANTE:
+                // Quitamos el $this->db->get()->result() y el return.
+                // Solo dejamos el break para que el flujo siga hacia la paginación automática.
                 break;
 
             // HELPER: Obtener lista única de Monedas
@@ -192,53 +204,57 @@ class Importaciones_model extends CI_Model
                 if (isset($datos['cantidad']) && isset($datos['indice'])) $limite = "LIMIT {$datos['indice']}, {$datos['cantidad']}";
 
                 // Búsqueda
-                $busquedas = (isset($datos['busqueda'])) ? $datos['busqueda'] : null ;
+                $busquedas = (isset($datos['busqueda'])) ? $datos['busqueda'] : null;
                 $filtros_having = "HAVING psgb.id";
                 $filtros_where = "";
 
                 // Si se realiza una búsqueda
-                if($busquedas && $busquedas != ""){
+                if ($busquedas && $busquedas != "") {
                     // Se divide por palabras
                     $palabras = explode(" ", trim($busquedas));
 
                     // Se recorren las palabras
-                    for ($i=0; $i < count($palabras); $i++) { 
+                    for ($i = 0; $i < count($palabras); $i++) {
                         $filtros_having .= " AND (";
                         $filtros_having .= " id LIKE '%{$palabras[$i]}%'";
                         $filtros_having .= " OR observaciones LIKE '%{$palabras[$i]}%'";
                         $filtros_having .= ") ";
-                        
-                        if(($i + 1) < count($palabras)) $filtros_having .= " AND ";
+
+                        if (($i + 1) < count($palabras)) $filtros_having .= " AND ";
                     }
                 }
 
                 // Se aplican los filtros
-                if(isset($datos['id'])) $filtros_where .= " AND psgb.id = {$datos['id']} ";
-                if(isset($datos['importacion_id'])) $filtros_where .= " AND psgb.importacion_id = {$datos['importacion_id']} ";
+                if (isset($datos['id'])) $filtros_where .= " AND psgb.id = {$datos['id']} ";
+                if (isset($datos['importacion_id'])) $filtros_where .= " AND psgb.importacion_id = {$datos['importacion_id']} ";
 
-                $order_by = (isset($datos['ordenar'])) ? "ORDER BY {$datos['ordenar']}": "ORDER BY psgb.fecha_creacion DESC";
+                $order_by = (isset($datos['ordenar'])) ? "ORDER BY {$datos['ordenar']}" : "ORDER BY psgb.fecha_creacion DESC";
 
-                $sql =
-                "SELECT
-                    psgb.*,
-                    DATE(psgb.fecha_creacion) fecha,
-                    TIME(psgb.fecha_creacion) hora,
-                    IF(u.razon_social is not null, u.razon_social, '-') nombre_usuario
-                FROM importaciones_bitacora psgb
-                LEFT JOIN usuarios u ON psgb.usuario_id = u.id
-                WHERE psgb.id is NOT NULL
-                $filtros_where
-                $filtros_having
-                $order_by
-                $limite
-                ";
+                $sql = "SELECT
+            psgb.*,
+            DATE(psgb.fecha_creacion) fecha,
+            TIME(psgb.fecha_creacion) hora,
+            u.nombres as nombre_usuario,
+            i.razon_social as proveedor
+        FROM importaciones_bitacora psgb
+        LEFT JOIN usuarios u ON psgb.usuario_id = u.id
+        LEFT JOIN importaciones i ON psgb.importacion_id = i.id
+        WHERE psgb.id is NOT NULL
+        $filtros_where
+        $filtros_having
+        $order_by
+        $limite
+        ";
 
                 if (isset($datos['contar']) && $datos['contar']) return $this->db->query($sql)->num_rows();
                 if (isset($datos['id'])) return $this->db->query($sql)->row();
                 return $this->db->query($sql)->result();
-            break;
+                break;
 
-            
+            case 'importaciones_pagos_tipos':
+                $this->db->where('activo', 1);
+                return $this->db->get('importaciones_pagos_tipos')->result();
+            break;
         }
 
         $this->db->close();

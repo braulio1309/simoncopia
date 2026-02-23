@@ -19,7 +19,7 @@ Class Configuracion_model extends CI_Model {
         $usuario_seleccionado = $usuarios_disponibles[0];
         
         $datos['usuario_asignado_id'] = $usuario_seleccionado->id;
-        $datos['estado'] = 'asignada';
+        $datos['estado'] = 'asignada';        
         
         // Marcar usuario como no disponible temporalmente
         $this->marcar_usuario_no_disponible($usuario_seleccionado->id);
@@ -181,12 +181,14 @@ Class Configuracion_model extends CI_Model {
             break;
             
             case 'erp_listas_precios':
+                if($datos) $this->db->where($datos);
+
                 return $this->db
                     ->select([
                         '*',
+                        "f112_id id",
                         "CONCAT_WS(' ', f112_id, f112_descripcion) nombre"
                     ])
-                    ->where($datos)
                     ->order_by('f112_id')
                     ->get($tabla)
                     ->result()
@@ -323,6 +325,14 @@ Class Configuracion_model extends CI_Model {
                         'fecha_vencimiento >' => date('Y-m-d H:i:s'),
                     ])
                     ->get('usuarios_codigos_temporales')
+                    ->row()
+                ;
+            break;
+
+            case 'cuenta_bancaria':
+                return $this->db
+                    ->where($datos)
+                    ->get('cuentas_bancarias')
                     ->row()
                 ;
             break;
@@ -866,6 +876,88 @@ Class Configuracion_model extends CI_Model {
                     ->result()
                 ;
             break;
+
+            case 'logs_tipos':
+                return $this->db
+                    ->order_by('nombre')
+                    ->get('logs_tipos')
+                    ->result()
+                ;
+            break;
+
+            case 'logs':
+                $limite = "";
+                if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";
+                if (isset($datos['cantidad']) && isset($datos['indice'])) $limite = "LIMIT {$datos['indice']}, {$datos['cantidad']}";
+
+                // Búsquedas
+                $where  = "WHERE l.id IS NOT NULL";
+                $having = "HAVING l.id";
+
+                if(isset($datos['id'])) $where .= " AND l.id = {$datos['id']} ";
+                if(isset($datos["fecha_inicial"]) && $datos["fecha_inicial"]) $where .= " AND l.fecha_creacion >= '{$datos['fecha_inicial']} 00:00:00' ";
+                if(isset($datos["fecha_final"]) && $datos["fecha_final"]) $where .= " AND l.fecha_creacion <= '{$datos['fecha_final']} 23:59:59' ";
+
+                // Filtros personalizados
+                $filtros_personalizados = isset($datos['filtros_personalizados']) ? $datos['filtros_personalizados']: [];
+
+                // Filtros where
+                if (isset($filtros_personalizados['fecha']) && $filtros_personalizados['fecha'] != '') $where .= " AND DATE(l.fecha_creacion) = '{$filtros_personalizados['fecha']}' ";
+                if (isset($filtros_personalizados['modulo']) && $filtros_personalizados['modulo'] != '') $where .= " AND m.nombre LIKE '%{$filtros_personalizados['modulo']}%' ";
+                if (isset($filtros_personalizados['log_tipo']) && $filtros_personalizados['log_tipo'] != '') $where .= " AND lt.nombre LIKE '%{$filtros_personalizados['log_tipo']}%' ";
+                if (isset($filtros_personalizados['observacion']) && $filtros_personalizados['observacion'] != '') $where .= " AND l.observacion LIKE '%{$filtros_personalizados['observacion']}%' ";
+
+                // Filtros having
+                if (isset($filtros_personalizados['usuario']) && $filtros_personalizados['usuario'] != '') {
+                    $usuario = $this->db->escape_like_str($filtros_personalizados['usuario']);
+                    $having .= " AND usuario LIKE '%{$usuario}%'";
+                }
+
+
+                // Si se realiza una búsqueda
+                if (isset($datos['busqueda']) && $datos['busqueda'] != '') {
+                    // Se divide por palabras
+                    $palabras = explode(' ', trim($datos['busqueda']));
+
+                    // Se recorren las palabras
+                    for ($i = 0; $i < count($palabras); $i++) {
+                        $having .= " AND (";
+                        $having .= " l.id LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR lt.nombre LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR m.nombre LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR l.fecha_creacion LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR u.nombres LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR u.primer_apellido LIKE '%{$palabras[$i]}%'";
+                        $having .= " OR u.segundo_apellido LIKE '%{$palabras[$i]}%'";
+                        $having .= ") ";
+
+                        if (($i + 1) < count($palabras)) $having .= " AND ";
+                    }
+                }
+
+                // Ordenamiento
+                $order_by = isset($datos['ordenar']) ? "ORDER BY {$datos['ordenar']}" : "ORDER BY l.fecha_creacion DESC";
+
+                $sql = " SELECT
+                        l.*,
+                        lt.nombre log_tipo,
+                        m.nombre modulo,
+                        CONCAT_WS(' ', u.nombres COLLATE utf8mb4_general_ci, u.primer_apellido COLLATE utf8mb4_general_ci, u.segundo_apellido COLLATE utf8mb4_general_ci) AS usuario
+                    FROM logs l
+                    LEFT JOIN logs_tipos lt ON l.log_tipo_id = lt.id
+                    LEFT JOIN modulos m ON lt.modulo_id = m.id
+                    LEFT JOIN usuarios u ON l.usuario_id = u.id
+                    $where
+                    GROUP BY l.id
+                    $having
+                    $order_by
+                    $limite
+                ";
+
+                if (isset($datos['contar']) && $datos['contar'])  return $this->db->query($sql)->num_rows();
+                if (isset($datos['id'])) return $this->db->query($sql)->row();
+                return $this->db->query($sql)->result();
+                break;
 
             case 'paises':
                 return $this->db

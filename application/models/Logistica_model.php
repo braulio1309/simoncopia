@@ -18,6 +18,79 @@ Class Logistica_model extends CI_Model {
 	 */
 	function obtener($tabla, $datos = null) {
 		switch ($tabla) {
+            case 'pedidos':
+                $limite = "";
+                if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";
+                if (isset($datos['cantidad']) && isset($datos['indice'])) $limite = "LIMIT {$datos['indice']}, {$datos['cantidad']}";
+
+                // Búsqueda
+                $busquedas = (isset($datos['busqueda'])) ? $datos['busqueda'] : null ;
+                $filtros_having = "HAVING id";
+                $filtros_where = "WHERE p.id";
+
+                // Si se realiza una búsqueda
+                if($busquedas && $busquedas != ""){
+                    // Se divide por palabras
+                    $palabras = explode(" ", trim($busquedas));
+
+                    // Se recorren las palabras
+                    for ($i=0; $i < count($palabras); $i++) { 
+                        $filtros_having .= " AND (";
+                        $filtros_having .= " OR p.f430_id_fecha LIKE '%{$palabras[$i]}%'";
+                        $filtros_having .= " OR p.f200_nit_pedido_rem LIKE '%{$palabras[$i]}%'";
+                        $filtros_having .= " OR p.f200_razon_social_pedido_rem LIKE '%{$palabras[$i]}%'";
+                        $filtros_having .= " OR p.f430_num_docto_referencia LIKE '%{$palabras[$i]}%'";
+                        $filtros_having .= " OR p.f430_usuario_creacion LIKE '%{$palabras[$i]}%'";
+                        $filtros_having .= " OR p.f431_vlr_neto LIKE '%{$palabras[$i]}%'";
+                        $filtros_having .= " OR numero LIKE '%{$palabras[$i]}%'";
+
+                        $filtros_having .= ") ";
+                        
+                        if(($i + 1) < count($palabras)) $filtros_having .= " AND ";
+                    }
+                }
+
+                // Filtros personalizados
+                $filtros_personalizados = isset($datos['filtros_personalizados']) ? $datos['filtros_personalizados'] : [];
+                if (isset($filtros_personalizados['id']) && $filtros_personalizados['id'] != '') $filtros_where .= " AND p.id LIKE '%{$filtros_personalizados['id']}%' ";
+                if (isset($filtros_personalizados['fecha']) && $filtros_personalizados['fecha'] != '') $filtros_where .= " AND DATE(p.f430_id_fecha) = '{$filtros_personalizados['fecha']}' ";
+                if (isset($filtros_personalizados['nit']) && $filtros_personalizados['nit'] != '') $filtros_where .= " AND p.f200_nit_pedido_rem LIKE '%{$filtros_personalizados['nit']}%' ";
+                if (isset($filtros_personalizados['razon_social']) && $filtros_personalizados['razon_social'] != '') $filtros_where .= " AND p.f200_razon_social_pedido_rem LIKE '%{$filtros_personalizados['razon_social']}%' ";
+                if (isset($filtros_personalizados['orden_compra']) && $filtros_personalizados['orden_compra'] != '') $filtros_where .= " AND p.f430_num_docto_referencia LIKE '%{$filtros_personalizados['orden_compra']}%' ";
+                if (isset($filtros_personalizados['creador']) && $filtros_personalizados['creador'] != '') $filtros_where .= " AND p.f430_usuario_creacion LIKE '%{$filtros_personalizados['creador']}%' ";
+                if (isset($filtros_personalizados['valor']) && $filtros_personalizados['valor'] != '') $filtros_where .= " AND p.f431_vlr_neto LIKE '%{$filtros_personalizados['valor']}%' ";
+
+
+                // Filtros having
+                if (isset($filtros_personalizados['numero']) && $filtros_personalizados['numero'] != '')$filtros_having .= " AND numero LIKE '%{$filtros_personalizados['numero']}%' ";
+
+                if (isset($filtros_personalizados['items']) && $filtros_personalizados['items'] != '')$filtros_having .= " AND items = {$filtros_personalizados['items']} ";
+
+                $order_by = (isset($datos['ordenar'])) ? "ORDER BY {$datos['ordenar']}": "ORDER BY p.f430_id_fecha DESC";
+                
+                $sql = 
+                "SELECT
+                    p.id,
+                    p.f430_id_fecha fecha,
+                    CONCAT_WS('-', p.f430_id_co_fact, p.f430_id_tipo_docto, p.f430_consec_docto) AS numero,
+                    p.f200_nit_pedido_rem nit,
+                    p.f200_razon_social_pedido_rem razon_social,
+                    p.f430_num_docto_referencia orden_compra,
+                    p.f430_usuario_creacion creador,
+                    COUNT(*) AS items,
+                    SUM(p.f431_vlr_neto) AS valor
+                FROM erp_ventas_pedidos p
+                $filtros_where
+                GROUP BY p.f430_rowid
+                $filtros_having
+                $order_by
+                $limite";
+
+                if (isset($datos['contar']) && $datos['contar']) return $this->db->query($sql)->num_rows();
+                if (isset($datos['id'])) return $this->db->query($sql)->row();
+                return $this->db->query($sql)->result();
+            break;
+
             case 'productos_solicitudes_garantia':
                 $limite = "";
                 if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";

@@ -1,9 +1,6 @@
 
 <div class="w-100 p-5">
-    <div class="mb-4">
-        <a class="btn btn-success" href="javascript:cargarBitacoraDetalle()">Crear</a>
-    </div>
-
+   
     <div id="contenedor_importaciones_bitacora"></div>
     <div id="contenedor_importaciones_bitacora_detalle"></div>
 </div>

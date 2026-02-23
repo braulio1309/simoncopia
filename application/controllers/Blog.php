@@ -20,8 +20,7 @@ class Blog extends MY_Controller {
     }
 
     function index() {
-        $this->data['contenido_principal'] = 'blog/index';
-        $this->load->view('core/body', $this->data);
+        redirect($this->config->item('base_url_blog'));
     }
 
     function contacto() {

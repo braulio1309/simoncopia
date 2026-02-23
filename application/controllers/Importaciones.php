@@ -230,13 +230,7 @@ class Importaciones extends MY_Controller
                 // Se obtienen los registros
                 $resultados = $this->importaciones_model->obtener("importaciones_bitacora", $datos);
 
-                print json_encode([
-                    "draw" => $this->input->get("draw"),
-                    "recordsTotal" => $total_resultados,
-                    "recordsFiltered" => $total_resultados,
-                    "data" => $resultados
-                ]);
-            break;
+                break;
         }
         print json_encode([
             "draw" => $this->input->get("draw"),
@@ -245,6 +239,91 @@ class Importaciones extends MY_Controller
             "data" => $resultados
         ]);
     }
+
+    // Métodos para gestión de pagos
+    function pagos($opcion = 'ver', $id = null)
+    {
+        if (!$this->session->userdata('usuario_id')) redirect('inicio');
+
+        switch ($opcion) {
+            case 'ver':
+                $this->data['contenido_principal'] = 'importaciones/pagos/index';
+                $this->load->view('core/body', $this->data);
+                break;
+
+            case 'crear':
+                $this->data['id'] = null;
+                $this->data['contenido_principal'] = 'importaciones/pagos/detalle';
+                $this->load->view('core/body', $this->data);
+                break;
+
+            case 'editar':
+                $this->data['id'] = $id;
+                $this->data['contenido_principal'] = 'importaciones/pagos/detalle';
+                $this->load->view('core/body', $this->data);
+                break;
+
+            case 'guardar':
+                $this->guardar_pago();
+                break;
+
+            case 'eliminar':
+                $this->eliminar_pago($id);
+                break;
+        }
+    }
+
+    private function guardar_pago()
+    {
+        $datos = $this->input->post();
+        $id = isset($datos['id']) ? $datos['id'] : null;
+        $solo_archivo = $this->input->get('solo_archivo'); // Detectar si es solo subida
+
+        // Si la petición es solo para el archivo (segundo paso)
+        if ($solo_archivo && $id) {
+            if (!empty($_FILES['comprobante']['name'])) {
+                $config['upload_path'] = './archivos/importaciones/' . $id . '/';
+                $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+                $config['max_size'] = 5120;
+                $config['encrypt_name'] = TRUE;
+
+                if (!is_dir($config['upload_path'])) mkdir($config['upload_path'], 0777, true);
+
+                $this->load->library('upload', $config);
+                if ($this->upload->do_upload('comprobante')) {
+                    $upload_data = $this->upload->data();
+                    $ruta = $config['upload_path'] . $upload_data['file_name'];
+                    $this->importaciones_model->actualizar('importaciones_pagos', ['id' => $id], ['comprobante_ruta' => $ruta]);
+
+                    echo json_encode(['status' => 'success', 'mensaje' => 'Archivo guardado']);
+                    return;
+                }
+            }
+            echo json_encode(['status' => 'error', 'mensaje' => 'No se pudo subir el archivo']);
+            return;
+        }
+
+        // Lógica normal de guardado de datos
+        unset($datos['id']);
+        $datos['usuario_id'] = $this->session->userdata('usuario_id');
+        $datos['valor_cop'] = ($datos['tipo_moneda_id'] == '1') ? $datos['valor_moneda_extranjera'] : ($datos['valor_moneda_extranjera'] * $datos['valor_trm']);
+
+        if ($id) {
+            $resultado = $this->importaciones_model->actualizar('importaciones_pagos', ['id' => $id], $datos);
+            $new_id = $id;
+        } else {
+            $datos['fecha_creacion'] = date('Y-m-d H:i:s');
+            $new_id = $this->importaciones_model->crear($datos, 'importaciones_pagos');
+            $resultado = $new_id ? true : false;
+        }
+
+        echo json_encode([
+            'status' => $resultado ? 'success' : 'error',
+            'id' => $new_id,
+            'mensaje' => $resultado ? 'Datos guardados correctamente.' : 'Error al guardar.'
+        ]);
+    }
+
 
     public function guardar()
     {

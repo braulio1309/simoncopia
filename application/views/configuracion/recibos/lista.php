@@ -195,8 +195,9 @@
                     data: 'token',
                     visible: ($('#recibo_id_tipo').val() == 1)},
                 {
-                    title: 'Opciones', 
+                    title: 'Opciones',
                     data: null,
+                    width: '170px',
                     render: (recibo, type, row) => {
                         let botonEliminarComprobante = ($('#recibo_id_tipo').val() == 3 && $('#configuracion_comprobantes_eliminar').val() == 1 && !recibo.fecha_actualizacion_bot)
                         ? `
@@ -206,10 +207,10 @@
                         `
                         : ``
 
-                        let botonReciboCaja = ($('#recibo_id_tipo').val() == 2 && recibo.wompi_status == 'APPROVED')
+                        let botonReciboCaja = (($('#recibo_id_tipo').val() == 2 && recibo.wompi_status == 'APPROVED') || $('#recibo_id_tipo').val() == 3)
                         ? `
                             <a type="button" class="btn btn-sm btn-danger" href="${$('#site_url').val()}/reportes/pdf/recibo/${recibo.token}" target="_blank">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-file-pdf"></i>
                         </a>
                         ` 
                         : ``

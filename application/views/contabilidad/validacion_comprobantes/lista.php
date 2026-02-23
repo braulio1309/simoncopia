@@ -100,6 +100,23 @@
                     className: 'dt-right',
                     width: '70px',
                 },
+                {
+                    title: 'Acciones',
+                    data: null, 
+                    orderable: false,
+                    className: 'text-center',
+                    render: (data, type, row) => {
+                        return `
+                            <div class="dt-buttons-gap">
+                                <button type="button" 
+                                    class="btn btn-success btn-sm"
+                                    onClick="generarReporte('excel/consecutivos_detalle', { comprobante_contable_tarea_id: ${row.id} })">
+                                    <i class="fas fa-file-excel"></i>
+                                </button>
+                            </div>
+                        `
+                    }
+                }
             ],
             columnDefs: [
                 { targets: '_all', className: 'dt-head-center p-1' } // Todo el encabezado alineado al centro

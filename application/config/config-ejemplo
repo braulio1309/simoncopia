@@ -1,0 +1,167 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+/***************************************
+ ************** URLs base **************
+ ***************************************/
+$config['base_url'] = '';   // http://localhost/proyecto
+$config['base_url_blog'] = ''; // https://repuestossimonbolivar.com/web/blog-de-repuestos-simon-bolivar
+$config['url_fotos'] = ''; // http://localhost/proyecto/archivos/fotos/
+$config['url_wordpress'] = ''; // https://repuestossimonbolivar.com/web
+$config['ruta_archivo_digitalizado'] = ''; // archivos/documentos_contables
+$config['ruta_informe_retenciones'] = '';   // Ruta del directorio donde está el informe de retenciones de clientes
+
+/***************************************
+ ************** ERP Siesa **************
+ ***************************************/
+$config['base_url_stage'] = ''; // URL en QA
+$config['base_url_qa'] = ''; // URL en QA
+$config['base_url_produccion'] = ''; // URL en Producción
+
+$config['api_siesa'] = [
+    'base_url' => $config['base_url_qa'],
+    'idCompania' => '',
+    'idInterface' => '',
+    'idDocumento' => '',
+    'idDocumentoImportacionPedido' => '',
+    'idDocumentoImportacionDocumentoContable' => '',
+    'idDocumentoImportacionDocumentoContableV2' => '',
+    'conniKey' => '',
+    'conniToken' => '',
+];
+
+$config['base_url_produccion_conekta'] = '';
+$config['api_siesa_connekta'] = [
+    'base_url' => $config['base_url_produccion_conekta'],
+    'idCompania' => '',
+    'conniKey' => '',
+    'conniToken' => '',
+];
+
+// Base de datos real en SQL Server (Pruebas)
+// $config['siesa_url'] = '';  // Funciona con VPN encendida
+// $config['siesa_base_datos'] = '';
+// $config['siesa_usuario'] = '';
+// $config['siesa_clave'] = '';
+// $config['siesa_puerto'] = 1433;
+
+// // Base de datos real en SQL Server (Producción)
+// $config['siesa_url'] = '';
+// $config['siesa_base_datos'] = '';
+// $config['siesa_usuario'] = '';
+// $config['siesa_clave'] = '';
+// $config['siesa_puerto'] = 1433;
+
+// Bodegas
+$config['bodega_principal'] = '';
+$config['bodega_outlet'] = ''; // Esta bodega ya no está en uso
+
+// Listas de precio
+$config['lista_precio'] = '002';
+
+/****************************************
+ ******** Pasarela de pagos Wompi *******
+ ** Gateway - Todos los medios de pago **
+ ****************************************/
+// Sandbox
+$config['api_wompi_gateway'] = [
+    'url' => 'https://sandbox.wompi.co/v1',
+    'llave_publica' => '',
+    'llave_privada' => '',
+    'secret_eventos' => '',
+    'secret_integridad' => '',
+];
+
+// Producción
+// $config['api_wompi_gateway'] = [
+//     'url' => 'https://production.wompi.co/v1',
+//     'llave_publica' => '',
+//     'llave_privada' => '',
+//     'secret_eventos' => '',
+//     'secret_integridad' => '',
+// ];
+
+/*********************************************
+ *********** Pasarela de pagos Wompi *********
+ ** Agregador - Compra ahora y paga después **
+ ********************************************/
+// Sandbox
+$config['api_wompi_agregador'] = [
+    'url' => 'https://sandbox.wompi.co/v1',
+    'llave_publica' => '',
+    'llave_privada' => '',
+    'secret_eventos' => '',
+    'secret_integridad' => '',
+];
+
+// Producción
+// $config['api_wompi_agregador'] = [
+//     'url' => 'https://production.wompi.co/v1',
+//     'llave_publica' => '',
+//     'llave_privada' => '',
+//     'secret_eventos' => '',
+//     'secret_integridad' => '',
+// ];
+
+/***************************************
+ **** Correo electrónico de alertas ****
+ ***************************************/
+$config['datos_email'] = [
+    'protocol' => 'smtp',
+    'smtp_host' => 'ssl://smtp.googlemail.com',
+    'smtp_user' => '',
+    'smtp_pass' => '',
+    'smtp_port' => 465,
+    'mailtype' => 'html',
+    'charset' => 'utf-8',
+    'newline' => "\r\n",
+];
+
+/***************************************
+ ****** WMS Konecta (Por eliminar) *****
+ ***************************************/
+// Pruebas
+$config['wms_url'] = '';
+$config['wms_base_datos'] = '';
+$config['wms_usuario'] = '';
+$config['wms_clave'] = '';
+$config['wms_puerto'] = 1433;
+
+// Producción
+// $config['wms_url'] = '';
+// $config['wms_base_datos'] = '';
+// $config['wms_usuario'] = '';
+// $config['wms_clave'] = '';
+// $config['wms_puerto'] = 1433;
+
+/***************************************
+ ************ Envíos - TCC *************
+ ***************************************/
+// Sandbox
+$config['api_tcc'] = [
+    'url' => '',
+    'access_token' => '',
+];
+
+// // Producción
+// $config['api_tcc'] = [
+//     'url' => '',
+//     'access_token' => '',
+// ];
+
+/***************************************
+ **** Lector de facturas - Invoices ****
+ ***************************************/
+// Desarrollo
+$config['invoices_url'] = ''; // Conexión por VPN
+$config['invoices_base_datos'] = '';
+$config['invoices_usuario'] = '';
+$config['invoices_clave'] = '';
+$config['invoices_puerto'] = 1433;
+
+// Producción
+// $config['invoices_url'] = '';
+// $config['invoices_base_datos'] = ''; // 
+// $config['invoices_usuario'] = '';
+// $config['invoices_clave'] = '';
+// $config['invoices_puerto'] = 1433;

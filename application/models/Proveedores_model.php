@@ -26,8 +26,8 @@ Class Proveedores_model extends CI_Model{
 
     function eliminar($tipo, $datos = []) {
         switch ($tipo) {
-            case 'api_cuentas_por_pagar':
-                return $this->db->delete('api_cuentas_por_pagar', $datos);
+            case 'erp_cuentas_por_pagar':
+                return $this->db->delete('erp_cuentas_por_pagar', $datos);
             break;
 
             case 'proveedores_marcas':
@@ -52,7 +52,7 @@ Class Proveedores_model extends CI_Model{
 
     public function obtener($tipo, $datos = null) {
         switch ($tipo) {
-            case 'api_cuentas_por_pagar':
+            case 'erp_cuentas_por_pagar':
                 $limite = "";
                 if (isset($datos['cantidad'])) $limite = "LIMIT {$datos['cantidad']}";
                 if (isset($datos['cantidad']) && isset($datos['indice'])) $limite = "LIMIT {$datos['indice']}, {$datos['cantidad']}";
@@ -112,7 +112,7 @@ Class Proveedores_model extends CI_Model{
                     t.f200_razon_social provedor_nombre,
                     t.f200_nit provedor_nit,
                     CONCAT_WS('-',acpp.f353_id_co_cruce,'FCE',LPAD(acpp.f353_consec_docto_cruce,8,0)) numero_siesa
-                FROM api_cuentas_por_pagar acpp
+                FROM erp_cuentas_por_pagar acpp
                 LEFT JOIN terceros t ON t.f200_id = acpp.f200_id
                 LEFT JOIN centros_operacion AS s ON acpp.f353_id_co_cruce = s.codigo
                 WHERE acpp.id is NOT NULL

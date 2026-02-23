@@ -111,8 +111,8 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->proveedores_model->actualizar_batch($tipo, $datos['cotizacion_detalle'], 'id');
             break;
 
-            case 'importaciones_bitacora':
-                $resultado = $this->importaciones_model->actualizar('importaciones_bitacora', ['id' => $id], $datos);
+            case 'marketing_beneficios':
+                $resultado = $this->marketing_model->actualizar($tipo, ['id' => $id], $datos);
             break;
 
             default:
@@ -295,7 +295,7 @@ class Interfaces extends CI_Controller {
                 // Si trae cuentas contables, las agrega en la consulta
                 $datos_movimientos_contables = (isset($datos['movimientos_contables'])) ? $datos['movimientos_contables'] : null ;
                 
-                print crear_documento_contable($datos['id_recibo'], null, $datos_movimientos_contables);
+                echo crear_documento_contable($datos['id_recibo'], null, $datos_movimientos_contables);
             break;
 
             case 'recibos':
@@ -319,6 +319,12 @@ class Interfaces extends CI_Controller {
 
             case 'recibos_cuentas_bancarias':
                 print json_encode(['resultado' => $this->clientes_model->crear($tipo, $datos['valores'])]);
+            break;
+
+             case 'marketing_beneficios':
+                $datos['fecha_creacion'] = date('Y-m-d H:i:s');
+                $datos['usuario_id'] = $this->session->userdata('usuario_id');
+                print json_encode(['resultado' => $this->marketing_model->crear("marketing_beneficios", $datos)]);
             break;
 
             case 'recibos_detalle':
@@ -585,7 +591,7 @@ class Interfaces extends CI_Controller {
                 print json_encode(['resultado' => $this->configuracion_model->crear($tipo, $datos)]);
             break;
 
-            case 'importaciones_bitacora':
+             case 'importaciones_bitacora':
                 $datos['fecha_creacion'] = date('Y-m-d H:i:s');
                 print json_encode(['resultado' => $this->importaciones_model->crear($datos, 'importaciones_bitacora')]);
             break;
@@ -635,6 +641,13 @@ class Interfaces extends CI_Controller {
 
             case 'importaciones_maestro_anticipos':
                 print json_encode(['resultado' => $this->configuracion_model->eliminar($tipo, $datos)]);
+            break;
+            case 'importaciones':
+                $this->db->delete('importaciones_bitacora', ['importacion_id' => $datos['id']]);
+                
+                $this->db->delete('importaciones_pagos', ['importacion_id' => $datos['id']]);
+                
+                print json_encode(['resultado' => $this->importaciones_model->eliminar('importaciones', $datos)]);
             break;
         }
     }

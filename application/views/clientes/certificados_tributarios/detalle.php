@@ -3,7 +3,6 @@
         'clientes_retenciones_informe',
         ['nit' => $nit]
     );
-    echo "<input type='hidden' id='cliente_nit' value='{$cliente->nit}' />";
 ?>
 
 <div class="block-space block-space--layout--after-header"></div>
@@ -17,18 +16,22 @@
             <div class="card-body card-body--padding--2">
 
                 <div class="form-row">
+                    <div class="form-group col-lg-4">
+                        <label for="nit">Numero de documento *</label>
+                        <input type="text" class="form-control" id="nit" value="<?php if(isset($cliente->nit)) echo $cliente->nit; ?>">
+                    </div>
 
-                    <div class="form-group col-lg-6">
-                        <label for="tipo_retencion">Tipo de retención *</label>
+                    <div class="form-group col-lg-4">
+                        <label for="tipo_retencion">Tipo de certificado *</label>
                         <select class="form-control" id="tipo_retencion" name="tipo_retencion" required>
                             <option value="" disabled selected>Seleccione tipo de retención</option>
-                            <option value="IVA">IVA</option>
-                            <option value="ICA">ICA</option>
-                            <option value="FUENTE">Retención en la fuente</option>
+                            <option value="FUENTE" data-directorio="RETEFUENTE">Retención en la fuente</option>
+                            <option value="IVA" data-directorio="RETEIVA">IVA</option>
+                            <option value="ICA" data-directorio="RETEICA">ICA</option>
                         </select>
                     </div>
 
-                    <div class="form-group col-lg-6">
+                    <div class="form-group col-lg-4">
                         <label for="monto">Monto *</label>
                         <input type="number" class="form-control" id="monto" step="0.01" min="0" placeholder="0.00">
                     </div>
@@ -63,10 +66,10 @@
     let eliminarArchivo = false
 
     async function guardarCertificado() {
-        let nit = $("#cliente_nit").val()
         let archivos = $("#certificado_archivo").prop("files")
 
         let camposObligatorios = [
+            $("#nit"),
             $("#tipo_retencion"),
             $("#monto"),
             $("#certificado_archivo")
@@ -79,7 +82,7 @@
             tipo_retencion: $("#tipo_retencion").val(),
             monto: $("#monto").val(),
             observacion: $("#observacion").val(),
-            nit: nit,
+            nit: $("#nit").val(),
             anio: new Date().getFullYear() - 1
         }
         
@@ -96,7 +99,6 @@
 
         // Subir archivo
         if (archivos.length > 0 && !eliminarArchivo) {
-
             let archivo = archivos[0]
             let extension = archivo.name.split('.').pop().toLowerCase()
             let nombreArchivo = `certificado.${extension}`
@@ -107,7 +109,7 @@
             let peticion = new XMLHttpRequest()
             peticion.open(
                 'POST',
-                `${$('#site_url').val()}clientes/subir_certificado/${id}`
+                `${$('#site_url').val()}clientes/subir_certificado/${id}/${$("#tipo_retencion option:selected").attr('data-directorio')}`
             )
             peticion.send(formData)
 
@@ -124,11 +126,11 @@
 
                 mostrarAviso('exito', 'El certificado se guardó correctamente')
 
-                setTimeout(() => { history.back()}, 1500) // retorna a la página anterior
+                // setTimeout(() => { history.back()}, 1500) // retorna a la página anterior
             }
         } else {
             mostrarAviso('exito', 'El certificado se guardó correctamente')
-            setTimeout(() => { history.back()}, 1500) // retorna a la página anterior
+            // setTimeout(() => { history.back()}, 1500) // retorna a la página anterior
         }
     }
 

@@ -41,11 +41,6 @@ if (isset($id)) {
                         <label for="fecha_inicio">Fecha de inicio *</label>
                         <input type="date" class="form-control" id="fecha_inicio" value="<?php echo (isset($campania)) ? $campania->fecha_inicio : date('Y-m-d') ; ?>">
                     </div>
-
-                    <div class="form-group col-lg-3">
-                        <label for="fecha_finalizacion">Fecha finalización *</label>
-                        <input type="date" class="form-control" id="fecha_finalizacion" value="<?php echo (isset($campania)) ? $campania->fecha_finalizacion : date('Y-m-d') ; ?>">
-                    </div>
                     
                     <div class="form-group col-lg-6">
                         <label for="campania_descripcion">Descripción</label>
@@ -100,7 +95,6 @@ if (isset($id)) {
 
         let camposObligatorios = [
             $("#fecha_inicio"),
-            $("#fecha_finalizacion"),
             $("#campania_nombre"),
             $('#plantilla_whatsapp'),
         ]
@@ -110,7 +104,6 @@ if (isset($id)) {
         let datos = {
             tipo: 'marketing_campanias',
             fecha_inicio: $("#fecha_inicio").val(),
-            fecha_finalizacion: $("#fecha_finalizacion").val(),
             nombre: $("#campania_nombre").val(),
             descripcion: $("#campania_descripcion").val(),
             nombre_plantilla_whatsapp: $('#plantilla_whatsapp').val(),

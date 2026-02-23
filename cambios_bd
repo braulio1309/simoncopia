@@ -819,7 +819,6 @@ ALTER TABLE `recibos` ADD COLUMN `tipo_cliente` varchar(5) NULL AFTER `tercero_v
 ALTER TABLE `comprobantes_contables_tareas_detalle` ADD FOREIGN KEY (`comprobante_contable_tarea_id`) REFERENCES `comprobantes_contables_tareas` (`id`) ON DELETE RESTRICT;
 ALTER TABLE `comprobantes_contables_tareas` ADD FOREIGN KEY (`comprobante_contable_tipo_id`) REFERENCES `comprobantes_contables_tipos` (`id`) ON DELETE RESTRICT;
 
-
 CREATE TABLE importaciones_bitacora (
     id INT(11) NOT NULL AUTO_INCREMENT,
     importacion_id INT(11) DEFAULT NULL,
@@ -828,3 +827,97 @@ CREATE TABLE importaciones_bitacora (
     fecha_creacion DATETIME DEFAULT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 20260204 Se almacena el id del módulo
+ALTER TABLE `logs_tipos` ADD COLUMN `modulo_id` int NULL AFTER `nombre`;
+
+-- Nuevos registros importantes
+INSERT INTO `modulos` (`id`, `nombre`, `descripcion`) VALUES (11, 'sesion', 'Sesión')
+INSERT INTO `modulos` (`id`, `nombre`, `descripcion`) VALUES (12, 'contabilidad', 'Contabilidad')
+INSERT INTO `logs_tipos` (`id`, `nombre`) VALUES (107, 'Validación de comprobantes contables')
+
+-- Nombre de tabla cambiado
+RENAME TABLE api_cuentas_por_pagar TO erp_cuentas_por_pagar;
+
+-- Para las tablas relacionadas a importaciones, se establece cascada para eliminación
+ALTER TABLE `importaciones_bitacora` DROP FOREIGN KEY `importaciones_bitacora_ibfk_1`;
+ALTER TABLE `importaciones_bitacora` ADD CONSTRAINT `importaciones_bitacora_ibfk_1` FOREIGN KEY (`importacion_id`) REFERENCES `ecommerce`.`importaciones` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `cuentas_bancarias` ADD COLUMN `nombre_abreviado` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `descripcion`;
+
+-- 20260204 Se agrega log 
+INSERT INTO `logs_tipos`(`id`, `nombre`, `modulo_id`) VALUES (108, 'Marketing - Campaña duplicada', 10);
+
+-- 20260205 Se agrega rol para el permiso ver logs
+INSERT INTO `roles`(`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (24, 'configuracion_logs_ver', 'Ver listado de logs', 2);
+INSERT INTO `roles`(`id`, `nombre`, `descripcion`, `modulo_id`) VALUES (23, 'configuracion_logs_ver', 'Ver listado de logs', 2);
+
+-- 20260206 SE agrega log para registro de campaña eliminada 
+INSERT INTO `logs_tipos`(`id`, `nombre`, `modulo_id`) VALUES (109, 'Marketing- Campaña eliminada', NULL);
+
+-- 20260206 Se agrega campo para controlar la eliminación del campo fecha de finalización en las campañas de marketing
+ALTER TABLE marketing_campanias DROP COLUMN fecha_finalizacion;
+
+-- Crear tabla de tipos de pago
+CREATE TABLE IF NOT EXISTS importaciones_pagos_tipos (
+    id int NOT NULL AUTO_INCREMENT,
+    nombre varchar(100) NOT NULL,
+    descripcion varchar(255) NULL,
+    activo tinyint(1) DEFAULT 1,
+    PRIMARY KEY (id)
+);
+
+-- Insertar tipos de pago
+INSERT INTO importaciones_pagos_tipos (nombre, descripcion) VALUES
+('Anticipo', 'Pago anticipado de la importación'),
+('Pago parcial', 'Pago parcial de la importación'),
+('Pago total', 'Pago total de la importación'),
+('Impuestos DIAN', 'Pago de impuestos a la DIAN'),
+('Flete', 'Pago del flete de transporte'),
+('Seguro', 'Pago del seguro de la mercancía');
+
+-- Actualizar tabla importaciones_pagos con nuevos campos
+ALTER TABLE importaciones_pagos 
+ADD COLUMN tipo_pago_id int NULL AFTER importacion_id,
+ADD COLUMN tipo_moneda_id tinyint(1) NULL DEFAULT 1 COMMENT '1: COP, 2: USD, 3: EUR',
+ADD COLUMN orden_compra varchar(50) NULL,
+ADD COLUMN referencia_bancaria varchar(100) NULL,
+ADD COLUMN comprobante_ruta varchar(255) NULL,
+ADD COLUMN requiere_legalizacion tinyint(1) DEFAULT 0,
+ADD COLUMN fecha_legalizacion date NULL,
+ADD COLUMN usuario_solicita_id int NULL;
+
+-- 20260210 Se agrega nuevo log para el registro del reporte de los consecutivos de contabilidad
+INSERT INTO `logs_tipos`(`id`, `nombre`, `modulo_id`) VALUES (110, 'Contabilidad - Generado reporte de consecutivos', NULL);
+
+--20260213 Se agregan campos correspondientes a las variables de la importación de los contactos para el módulo de marketing
+ALTER TABLE `marketing_campanias_contactos` 
+ADD COLUMN `variable_1` varchar(255) NULL AFTER `fecha_envio`,
+ADD COLUMN `variable_2` varchar(255) NULL AFTER `variable_1`,
+ADD COLUMN `variable_3` varchar(255) NULL AFTER `variable_2`,
+ADD COLUMN `variable_4` varchar(255) NULL AFTER `variable_3`,
+ADD COLUMN `variable_5` varchar(255) NULL AFTER `variable_4`,
+ADD COLUMN `variable_6` varchar(255) NULL AFTER `variable_5`;
+
+--20260214 Se agrega campo para almacenar garantía de un producto
+ALTER TABLE `productos_metadatos` 
+ADD COLUMN `garantia` varchar(255) NULL AFTER `detalles_tecnicos`;
+
+-- 20260217 Campo para almacenar la lista de precios del cliente que compra a crédito
+ALTER TABLE `usuarios` ADD COLUMN `lista_precio` varchar(5) NULL COMMENT 'Lista de precio para compra a crédito' AFTER `perfil_id`;
+
+CREATE TABLE `marketing_beneficios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `fecha_creacion` datetime NULL,
+  `usuario_id` int NULL,
+  `nombre` varchar(255) NULL,
+  `beneficio_tipo` varchar(50) NULL COMMENT 'promoción o código descuento',
+  `codigo_descuento` varchar(100) NULL,
+  `reglas` text NULL,
+  `fecha_inicio` date NULL,
+  `fecha_final` date NULL,
+  `presupuesto` decimal(15,2) NULL COMMENT 'Valor máximo del presupuesto',
+  `valor_usado` decimal(15,2) DEFAULT 0.00 COMMENT 'Valor usado del presupuesto',
+  `limite_uso` int NULL COMMENT 'Cantidad de items en promoción',
+  `tipo_venta` varchar(20) NULL COMMENT 'contado o crédito',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

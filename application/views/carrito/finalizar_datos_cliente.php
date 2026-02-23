@@ -140,8 +140,8 @@ if(!empty($tercero)) {
 
     <div class="form-row">
         <div class="form-group col-12">
-            <div class="tag-badge tag-badge--new badge_formulario mb-2 mt-2">
-                DATOS DE ENVÍO
+            <div class="tag-badge tag-badge--new badge_formulario_azul mb-2 mt-2">
+                Datos de envío
             </div>
         </div>
 

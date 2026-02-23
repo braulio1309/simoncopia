@@ -1,4 +1,4 @@
-<?php $permisos = $this->configuracion_model->obtener('permisos'); ?>
+<?php if($this->session->userdata('usuario_id')) $permisos = $this->configuracion_model->obtener('permisos'); ?>
 
 <div class="card-body card-body--padding--2">
     <?php if(isset($permisos) && in_array(['pedidos' => 'pedidos_credito_gestionar'], $permisos)) { ?>

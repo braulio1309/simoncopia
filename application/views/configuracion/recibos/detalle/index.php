@@ -60,9 +60,7 @@ $dia_recibo = str_pad($recibo->dia, 2, '0', STR_PAD_LEFT);
 
         await obtenerPromesa(`${$('#site_url').val()}interfaces/crear`, {tipo: 'factura_documento_contable', 'id_recibo': reciboId})
         .then(async pago => {
-            console.log(pago)
-
-            if(!pago.error) {
+            if(!pago.exito) {
                 mostrarAviso('error', `
                     Ocurrió un error al crear el documento contable en Siesa:
                     <pre>
@@ -82,13 +80,7 @@ $dia_recibo = str_pad($recibo->dia, 2, '0', STR_PAD_LEFT);
 
             let resultado = await consulta('actualizar', datosRecibo, false)
 
-            if(resultado) {
-                mostrarAviso('exito', 'El documento contable se asentó correctamente en Siesa.')
-
-                // setTimeout(() => {
-                //     location.href = `<?php // echo site_url("configuracion/recibos/ver/3"); ?>`;
-                // }, 1000);\
-            }
+            mostrarAviso('exito', 'El documento contable se asentó correctamente en Siesa.')
         }).catch(error => {
             mostrarAviso('error', 'Ocurrió un error al crear el documento contable en Siesa')
             return false

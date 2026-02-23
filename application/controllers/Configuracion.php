@@ -178,6 +178,38 @@ class Configuracion extends MY_Controller {
                     "data" => $resultados
                 ]);
             break;
+
+            case "logs":
+                // Se definen los filtros
+                $datos = [
+                    "contar" => true,
+                    "busqueda" => $busqueda,
+                    "fecha_inicial" => $this->input->get("fecha_inicial"),
+                    "fecha_final" => $this->input->get("fecha_final"),
+                    "filtros_personalizados" => $this->input->get("filtros_personalizados"),
+                ];
+
+                // De acuerdo a los filtros se obtienen el número de registros filtrados
+                $total_resultados = $this->configuracion_model->obtener("logs", $datos);
+
+                // Se quita campo para solo contar los registros
+                unset($datos["contar"]);
+
+                // Se agregan campos para limitar y ordenar
+                $datos["indice"] = $indice;
+                $datos["cantidad"] = $cantidad;
+                if ($ordenar) $datos["ordenar"] = $ordenar;
+
+                // Se obtienen los registros
+                $resultados = $this->configuracion_model->obtener("logs", $datos);
+
+                print json_encode([
+                    "draw" => $this->input->get("draw"),
+                    "recordsTotal" => $total_resultados,
+                    "recordsFiltered" => $total_resultados,
+                    "data" => $resultados
+                ]);
+                break;
         }
     }
 
@@ -205,6 +237,18 @@ class Configuracion extends MY_Controller {
 
             case 'ver':
                 $this->data['contenido_principal'] = 'configuracion/contactos/index';
+                $this->load->view('core/body', $this->data);
+            break;
+        }
+    }
+
+    function logs() {
+        if(!$this->session->userdata('usuario_id')) redirect('inicio');
+        if(!in_array(['configuracion' => 'configuracion_logs_ver'], $this->data['permisos'])) redirect('inicio');
+
+        switch ($this->uri->segment(3)) {
+            case 'ver':
+                $this->data['contenido_principal'] = 'configuracion/logs/index';
                 $this->load->view('core/body', $this->data);
             break;
         }

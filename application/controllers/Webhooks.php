@@ -1,6 +1,5 @@
 <?php
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 date_default_timezone_set('America/Bogota');
 
@@ -51,41 +50,108 @@ class Webhooks extends MY_Controller {
      *
      * @return void
      */
-    public function envio_certificados_masivo()
-    {
+    public function envio_certificados_masivo() {
         set_time_limit(0);
 
         // Obtener límite configurado
         $limite = $this->config->item('cantidad_datos');
 
         // Obtener solo pendientes (sin fecha_envio)
-        $clientes = $this->clientes_model->obtener('clientes_retenciones_informe', ['existe_fecha_envio' => true]);
+        $clientes = $this->clientes_model->obtener(
+            'clientes_retenciones_informe',
+            ['existe_fecha_envio' => true]
+        );
 
         if (empty($clientes)) {
-            echo json_encode(['exito' => false, 'mensaje' => 'No hay clientes pendientes']);
+            echo json_encode([
+                'exito' => false,
+                'mensaje' => 'No hay clientes pendientes'
+            ]);
             return;
         }
 
+        //Se consulta de excel la lista de emails excluidos
+        $emails_bloqueados = [];
+        $nits_excluidos = [];
+
+        $archivo_excel = $this->config->item('ruta_informe_retenciones');
+
+        try {
+            $spreadsheet = IOFactory::load($archivo_excel);
+
+            // Hoja bd_no enviar columna D: email
+            $hoja_no_enviar = $spreadsheet->getSheetByName('bd_no enviar');
+            if ($hoja_no_enviar) {
+                $ultima_fila = $hoja_no_enviar->getHighestRow();
+                for ($i = 2; $i <= $ultima_fila; $i++) {
+                    $email = trim($hoja_no_enviar->getCell("D$i")->getValue());
+                    if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $emails_bloqueados[] = strtolower($email);
+                    }
+                }
+            }
+
+            // Hoja retenciones columna M: excluir(si)
+            $hoja_retenciones = $spreadsheet->getSheetByName('retenciones');
+            if ($hoja_retenciones) {
+                $ultima_fila = $hoja_retenciones->getHighestRow();
+                for ($i = 2; $i <= $ultima_fila; $i++) {
+                    $nit = trim($hoja_retenciones->getCell("A$i")->getValue());
+                    $excluir = trim($hoja_retenciones->getCell("M$i")->getValue());
+
+                    if ($nit && preg_match('/^si$/i', $excluir)) $nits_excluidos[] = $nit;
+                }
+            }
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'exito' => false,
+                'mensaje' => 'Error leyendo archivo de exclusiones: ' . $e->getMessage()
+            ]);
+            return;
+        }
+
+        // Se realiza el envio masivo
         $enviados = 0;
         $fallidos = 0;
         $logs = [];
         $contador = 0;
 
         foreach ($clientes as $cliente) {
-            // Controlar cantidad máxima
             if ($contador >= $limite) break;
 
+            $email_cliente = strtolower(trim($cliente->email ?? ''));
+
+            // Se excluye el nit de la columna M
+            if (in_array($cliente->nit, $nits_excluidos)) {
+                $logs[] = [
+                    'nit' => $cliente->nit,
+                    'enviado' => false,
+                    'mensaje' => 'Excluido por columna M (retenciones)'
+                ];
+                continue;
+            }
+
+            // Excluir emails encontrados en la hoja bd_no enviar
+            if ($email_cliente && in_array($email_cliente, $emails_bloqueados)) {
+                $logs[] = [
+                    'nit' => $cliente->nit,
+                    'enviado' => false,
+                    'mensaje' => 'Email en lista bd_no enviar'
+                ];
+                continue;
+            }
+
+            // Se envia al helper para construir el email
             $resultado = enviar_email_masivo_notificacion_certificados($cliente);
 
-            // Se valida si el envio fue exitoso
             if (isset($resultado['exito']) && $resultado['exito']) {
                 // Marcar como enviado
                 $this->db
                     ->where('nit', $cliente->nit)
                     ->update('clientes_retenciones_informe', [
                         'fecha_envio' => date('Y-m-d H:i:s')
-                    ])
-                ;
+                    ]);
 
                 $logs[] = [
                     'nit' => $cliente->nit,
@@ -94,9 +160,9 @@ class Webhooks extends MY_Controller {
                 $enviados++;
             } else {
                 $logs[] = [
-                    'nit'   => $cliente->nit,
-                    'enviado'=> false,
-                    'mensaje' => $resultado['mensaje'] ?? 'Desconocido'
+                    'nit' => $cliente->nit,
+                    'enviado' => false,
+                    'mensaje' => $resultado['mensaje'] ?? 'Error desconocido'
                 ];
                 $fallidos++;
             }
@@ -105,179 +171,10 @@ class Webhooks extends MY_Controller {
         }
 
         echo json_encode([
-            'exito'   => true,
+            'exito' => true,
             'mensaje' => "Proceso terminado. Enviados: $enviados | Fallidos: $fallidos",
-            'log'     => $logs
+            'log' => $logs
         ]);
-    }
-
-    /**
-     * Lee un archivo de Excel con las retenciones de los clientes
-     * y crea o actualiza los registros en la base de datos.
-     * También procesa los contactos adicionales (celular y email)
-     * 
-     * @return void
-     */
-    function importar_retenciones_clientes()
-    {
-        $errores = 0;
-        $resultado = [];
-        $inicio = microtime(true);
-        $fecha_inicio = date('Y-m-d H:i:s');
-
-        // Ruta
-        $archivo_excel = $this->config->item('ruta_informe_retenciones');
-        
-        if (!file_exists($archivo_excel)) {
-            $errores++;
-            $resultado[] = 'El archivo de informe de retenciones no existe en la ruta configurada';
-        }
-
-        $procesados = 0;
-        $contactos_creados = 0;
-        $contactos_omitidos = 0;
-        $anio = date('Y') - 1;
-
-        if ($errores === 0) {
-            try {
-                $spreadsheet = IOFactory::load($archivo_excel);
-                
-                // Cargar la hoja específica "retenciones"
-                $hoja = $spreadsheet->getSheetByName('retenciones');
-                
-                if (!$hoja) throw new Exception('No se encontró la hoja "retenciones" en el archivo Excel');
-                
-                $ultima_fila = $hoja->getHighestRow();
-
-                for ($fila = 2; $fila <= $ultima_fila; $fila++) {
-                    $nit = trim($hoja->getCell('A' . $fila)->getValue());
-                    
-                    if (!$nit || !is_numeric($nit)) continue;
-
-                    // Datos para la tabla clientes_retenciones_informe
-                    $datos = [
-                        'anio' => $anio,
-                        'nit' => $nit,
-                        'razon_social' => trim($hoja->getCell("B$fila")->getValue()),
-                        'vendedor' => trim($hoja->getCell("C$fila")->getValue()),
-                        'valor_retencion_fuente' => (float) $hoja->getCell("D$fila")->getValue(),
-                        'valor_retencion_ica' => (float) $hoja->getCell("E$fila")->getValue(),
-                        'valor_retencion_iva' => (float) $hoja->getCell("F$fila")->getValue(),
-                    ];
-
-                    // Validar si existe el registro de retención
-                    $existe = $this->clientes_model->obtener('clientes_retenciones_informe', [ 'anio' => $anio, 'nit' => $nit]);
-
-                    if ($existe) {
-                        $datos['fecha_actualizacion'] = date('Y-m-d H:i:s');
-                        $this->clientes_model->actualizar('clientes_retenciones_informe', ['id' => $existe->id], $datos);
-                    } else {
-                        $datos['fecha_creacion'] = date('Y-m-d H:i:s');
-                        $this->clientes_model->crear('clientes_retenciones_informe', $datos);
-                    }
-
-                    $procesados++;
-
-                    // Procesar contactos adicionales
-                    $celular_adicional = trim($hoja->getCell("J$fila")->getValue());
-                    $email_adicional = trim($hoja->getCell("K$fila")->getValue());
-
-                    // Validar datos
-                    $tiene_celular = !empty($celular_adicional) && is_numeric($celular_adicional);
-                    $tiene_email = !empty($email_adicional) && filter_var($email_adicional, FILTER_VALIDATE_EMAIL);
-
-                    // Si tiene al menos uno de los dos, procesar
-                    if ($tiene_celular || $tiene_email) {
-                        
-                        // Preparar los datos base del contacto
-                        $datos_contacto = [
-                            'nit' => $nit,
-                            'modulo_id' => 8,
-                            'fecha_creacion' => date('Y-m-d H:i:s')
-                        ];
-
-                        // Agregar el número si existe
-                        if ($tiene_celular) $datos_contacto['numero'] = $celular_adicional;
-
-                        // Agregar el email si existe
-                        if ($tiene_email) $datos_contacto['email'] = $email_adicional;
-
-                        // Verificar si ya existe un contacto con estos datos exactos
-                        $debe_crear = true;
-                        
-                        // Si tiene ambos, verificar que no exista la combinación
-                        if ($tiene_celular && $tiene_email) {
-                            $existe_combinacion = $this->db
-                                ->where('nit', $nit)
-                                ->where('numero', $celular_adicional)
-                                ->where('email', $email_adicional)
-                                ->where('modulo_id', 8)
-                                ->get('terceros_contactos')
-                                ->row();
-                            
-                            if ($existe_combinacion) {
-                                $debe_crear = false;
-                            }
-                        }
-
-                        // Si solo tiene celular, verificar que no exista el número
-                        elseif ($tiene_celular) {
-                            $existe_numero = $this->configuracion_model->obtener('contactos', ['nit' => $nit,'numero' => $celular_adicional, 'modulo_id' => 8]);
-                            
-                            if ($existe_numero) $debe_crear = false;
-                        }
-
-                        // Si solo tiene email, verificar que no exista el email
-                        elseif ($tiene_email) {
-                            $existe_email = $this->configuracion_model->obtener('contactos', ['nit' => $nit, 'email' => $email_adicional, 'modulo_id' => 8 ]);
-                            
-                            if ($existe_email) $debe_crear = false;
-                        }
-
-                        // Crear el contacto con TODOS los datos que tenga
-                        if ($debe_crear) {
-                            $this->configuracion_model->crear('tercero_contacto', $datos_contacto);
-                            $contactos_creados++;
-                        } else {
-                            $contactos_omitidos++;
-                        }
-                    }
-                }
-            } catch (Exception $e) {
-                $errores++;
-                $resultado[] = 'Error al procesar el archivo: ' . $e->getMessage();
-            }
-        }
-
-        $fin = microtime(true);
-        $fecha_fin = date('Y-m-d H:i:s');
-
-        // Log del proceso
-        $this->configuracion_model->crear('logs', [
-            'fecha_creacion' => date('Y-m-d H:i:s'),
-            'observacion' => json_encode([
-                'inicio' => $fecha_inicio,
-                'fin' => $fecha_fin,
-                'registros_procesados' => $procesados,
-                'contactos_creados' => $contactos_creados,
-                'contactos_omitidos' => $contactos_omitidos
-            ]),
-            'log_tipo_id' => 103
-        ]);
-
-        $resultado[] = [
-            'registros_procesados' => $procesados,
-            'contactos_creados' => $contactos_creados,
-            'contactos_omitidos' => $contactos_omitidos,
-            'tiempo_ejecucion' => round($fin - $inicio, 2) . ' segundos'
-        ];
-
-        print json_encode([
-            'errores' => $errores,
-            'resultado' => $resultado,
-        ]);
-
-        return ($errores > 0) ? http_response_code(400) : http_response_code(200);
     }
 
     function email_test($id) {
@@ -604,7 +501,7 @@ class Webhooks extends MY_Controller {
 
         // Si se vuelve a ejecutar el wehbook, se ve mensaje
         if($recibo->actualizado_webhook == 1) array_push($resultado, ['Se volvió a ejecutar el webhook']);
-
+        
         // Si no ha sido actualizado por el webhook
         if($recibo->actualizado_webhook == 0) {
             // Tabla, condiciones, datos
@@ -634,10 +531,12 @@ class Webhooks extends MY_Controller {
             // Si es un pedido a crédito o el pago a contado fue aprobado
             if($tipo_documento[0] == 'pc' || $estado_transaccion == 'APPROVED') {
                 // Se envía el correo electrónico con la confirmación del pedido (Error o éxito)
-                // enviar_email_pedido($recibo);
+                enviar_email_pedido($recibo);
 
-                // $tipo_pedido = ($tipo_documento[0] == 'pc') ? "CPV" : "CPE" ;
-                $tipo_pedido = "CPE";
+                // Según el tipo de pedido
+                $tipo_pedido = ($tipo_documento[0] == 'pc') ? "CPV" : "CPE" ;
+                $tipo_cliente = ($tipo_documento[0] == 'pc') ? "C001" : "C005" ;
+                $forma_pago = ($tipo_documento[0] == 'pc') ? "C30" : "CNT" ;
 
                 $notas_pedido = substr("- Pedido $recibo->id eCommerce | Referencia: $token | ID de Transacción: $id_transaccion - Dirección de entrega: $recibo->direccion_envio | Tel: $recibo->telefono | $recibo->email_factura_electronica | $recibo->ubicacion_envio | $recibo->comentarios", 0, 254);
 
@@ -677,12 +576,12 @@ class Webhooks extends MY_Controller {
                             "f430_id_sucursal_fact" => str_pad($recibo->sucursal_id, 3, '0', STR_PAD_LEFT), // Valida en maestro el codigo de la sucursal del cliente a facturar
                             "f430_id_tercero_rem" => $recibo->documento_numero, // Valida en maestro , codigo del tercero del cliente a despachar
                             "f430_id_sucursal_rem" => str_pad($recibo->sucursal_id, 3, '0', STR_PAD_LEFT), // Valida en maestro el codigo de la sucursal del cliente a despachar
-                            "f430_id_tipo_cli_fact" => "C005", // Valida en maestro, tipo de clientes. Si es vacio la trae del cliente a facturar
+                            "f430_id_tipo_cli_fact" => $tipo_cliente, // Valida en maestro, tipo de clientes. Si es vacio la trae del cliente a facturar
                             "f430_id_co_fact" => "400", // Valida en maestro, código de centro de operación del documento
                             "f430_fecha_entrega" => "{$recibo->anio}{$recibo->mes}{$recibo->dia}", // El formato debe ser AAAAMMDD
                             "f430_num_dias_entrega" => 0, // Valida Nro de dias en que se estima, la entrega del pedido
                             "f430_num_docto_referencia" => $recibo->id, // Valida la orden de compra del documento
-                            "f430_id_cond_pago" => "CNT", // Valida en maestro, condiciones de pago
+                            "f430_id_cond_pago" => $forma_pago, // Valida en maestro, condiciones de pago
                             "f430_notas" => $notas_pedido, // Observaciones
                             "f430_id_tercero_vendedor" => ($recibo->tercero_vendedor_nit) ? $recibo->tercero_vendedor_nit : "22222221", // Si el cliente seleccionó vendedor, se envía en el paquete
                         ]
@@ -720,6 +619,9 @@ class Webhooks extends MY_Controller {
                     if((isset($datos['id']))) {
                         $documento_contable = crear_documento_contable_pedido($recibo->id, $datos);
                         array_push($resultado, $documento_contable);
+                    } else {
+                        // Actualización del estado del pedido a Aprobado
+                        $this->productos_model->actualizar('recibos', ['token' => $datos['reference']], [ 'recibo_estado_id' => 1 ]);
                     }
                 }
             }
@@ -866,795 +768,6 @@ class Webhooks extends MY_Controller {
             ]);
 
             return http_response_code(400);
-        }
-    }
-
-    /**
-     * Importa de Siesa los productos y su información básica
-     */
-    function importar_productos_detalle() {
-        $tiempo_inicial = microtime(true);
-
-        try {
-            $resultado_productos = json_decode(obtener_productos_api());
-            $codigo_producto = $resultado_productos->codigo;
-            $productos = ($codigo_producto == 0) ? $resultado_productos->detalle->Table : 0 ;
-            $fecha_actualizacion = date('Y-m-d H:i:s');
-            $datos = [];
-            $total_items = 0;
-
-            // Si encontró datos
-            if($codigo_producto != 1) {
-                foreach($productos as $producto) {
-                    $nuevo_producto = [
-                        'id' => $producto->IdItem,
-                        'descripcion_corta' => $producto->Descripcion_Corta,
-                        'referencia' => str_replace("*", "x", $producto->Referencia), // Cambia los * por letra x, pues Codeigniter no los permite por defecto
-                        'unidad_inventario' => $producto->Unidad_Inventario,
-                        'notas' => $producto->Notas,
-                        'tipo_inventario' => $producto->Tipo_Inventario,
-                        'marca' => $producto->Marca,
-                        'linea' => $producto->Linea,
-                        'grupo' => $producto->Grupo,
-                        'fecha_actualizacion' => $fecha_actualizacion,
-                        'fecha_actualizacion_api' => $producto->Fecha_Actualizacion,
-                    ];
-
-                    array_push($datos, $nuevo_producto);
-                }
-
-                // Si hay datos, se borran los registros anteriores
-                if(!empty($datos)) {
-                    $this->productos_model->eliminar('productos', 'id is  NOT NULL');
-                    $total_items = $this->productos_model->crear('productos', $datos);
-                } 
-            }
-
-            $tiempo_final = microtime(true);
-
-            $resultado = [
-                'items' => number_format($total_items, 0, '', '.'),
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos"
-            ];
-
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 4,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => json_encode($resultado)
-            ]);
-
-            print json_encode($resultado);
-
-            $this->db->close();
-
-            return http_response_code(200);
-        } catch (\Throwable $th) {
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 5,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            print json_encode([
-                'error' => true,
-                'descripcion' => 'Ocurrió un error al ejecutar el script'
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-
-    /**
-     * Importa de Siesa el inventario disponible de cada producto
-     */
-    function importar_productos_inventario() {
-        $tiempo_inicial = microtime(true);
-        
-        try {
-            // Filtro de la bodega
-            $filtro_bodega = $this->input->get('bodega');
-            $bodega = ($filtro_bodega) ? $filtro_bodega : $this->config->item('bodega_principal');
-            $resultado = json_decode(obtener_inventario_api(['bodega' => $bodega]));
-            $codigo_resultado = $resultado->codigo;
-            $inventario = ($resultado->codigo == 0) ? $resultado->detalle->Table : 0 ;
-            $fecha_actualizacion = date('Y-m-d H:i:s');
-            $datos = [];
-            $total_items = 0;
-
-            // Si encontró datos
-            if($codigo_resultado != 1) {
-                foreach($inventario as $item) {
-                    $nuevo_item = [
-                        'producto_id' => $item->Iditem,
-                        'referencia' => $item->Referencia,
-                        'bodega' => $item->Bodega,
-                        'descripcion_corta' => $item->Descripcion_Corta,
-                        'unidad_inventario' => $item->Unidad_Inventario,
-                        'disponible' => $item->Disponible,
-                        'fecha_actualizacion' => $fecha_actualizacion,
-                    ];
-
-                    array_push($datos, $nuevo_item);
-                }
-            
-                // Si hay datos, se borran los registros anteriores
-                if(!empty($datos)) {
-                    $this->productos_model->eliminar('productos_inventario', ['id !=' => null, 'bodega' => $bodega]);
-                    $total_items = $this->productos_model->crear('productos_inventario', $datos);
-                }
-            }
-
-            $tiempo_final = microtime(true);
-
-            $resultado = [
-                'bodega' => $bodega,
-                'items' => number_format($total_items, 0, '', '.'),
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos"
-            ];
-            
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 6,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => json_encode($resultado)
-            ]);
-
-            print json_encode($resultado);
-
-            $this->db->close();
-
-            return http_response_code(200);
-        } catch (\Throwable $th) {
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 7,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            print json_encode([
-                'error' => true,
-                'descripcion' => 'Ocurrió un error al ejecutar el script'
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-
-    /**
-     * Importa de la API estándar del ERP Siesa 
-     * los precios configurados de cada producto 
-     */
-    function importar_productos_precios() {
-        $tiempo_inicial = microtime(true);
-        $total_items = 0;
-
-        try {
-            // Filtro de la lista de precios
-            $filtro_lista_precios = $this->input->get('lista_precio');
-            $lista_precio = ($filtro_lista_precios) ? $filtro_lista_precios : $this->config->item('lista_precio');
-            $resultado = json_decode(obtener_precios_api(['lista_precio' => $lista_precio]));
-            $codigo_resultado = $resultado->codigo;
-            $precios = ($resultado->codigo == 0) ? $resultado->detalle->Table : 0 ;
-            $fecha_actualizacion = date('Y-m-d H:i:s');
-            $datos = [];
-            $total_items = 0;
-
-            // Si encontró datos
-            if($codigo_resultado != 1) {
-                foreach($precios as $precio) {
-                    $nuevo_item = [
-                        'producto_id' => $precio->IdItem,
-                        'referencia' => $precio->Referencia,
-                        'descripcion_corta' => $precio->Descripcion_Corta,
-                        'lista_precio' => $precio->Lista_precio,
-                        'precio' => $precio->PrecioSugerido, // Precio oficial
-                        'precio_maximo' => $precio->PrecioMaximo,
-                        'precio_minimo' => $precio->PrecioMinimo,
-                        'precio_sugerido' => $precio->PrecioSugerido,
-                        'fecha_actualizacion' => $fecha_actualizacion,
-                    ];
-
-                    array_push($datos, $nuevo_item);
-                }
-
-                // Primero, eliminamos todos los ítems de la lista de precios (Solo si hay datos disponibles para actualizar)
-                if(!empty($datos)) {
-                    $this->productos_model->eliminar('productos_precios', ['lista_precio' => $lista_precio]);
-                    $total_items = $this->productos_model->crear('productos_precios', $datos);
-                }
-            }
-
-            $tiempo_final = microtime(true);
-
-            $resultado = [
-                'lista_precio' => $lista_precio,
-                'items' => number_format($total_items, 0, '', '.'),
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos"
-            ];
-
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 34,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => json_encode($resultado)
-            ]);
-
-            print json_encode($resultado);
-
-            $this->db->close();
-
-            return http_response_code(200);
-        } catch (\Throwable $th) {
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 33,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            print json_encode([
-                'error' => true,
-                'descripcion' => 'Ocurrió un error al ejecutar el script'
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-
-    /**
-     * Importa de Siesa los detalles de pedidos del día anterior
-     * o del día seleccionado, con el fin de mostrar en la tienda
-     * Los productos destacados y/o más vendidos
-     */
-    function importar_productos_pedidos($fecha = null) {
-        $tiempo_inicial = microtime(true);
-
-        try {
-            $filtro_fecha = ($fecha) ? $fecha : date('Y-m-d') ;
-            $resultado_pedidos = json_decode(obtener_pedidos_api($filtro_fecha));
-            $codigo_resultado = $resultado_pedidos->codigo;
-            $pedidos = ($codigo_resultado == 0) ? $resultado_pedidos->detalle->Table : 0 ;
-            $fecha_creacion = date('Y-m-d H:i:s');
-            $datos = [];
-            $total_items = 0;
-
-            // Si encontró datos
-            if($codigo_resultado != 1) {
-                foreach($pedidos as $item) {
-                    $nuevo_item = [
-                        'centro_operaciones' => $item->Centro_Operaciones,
-                        'documento_tipo' => $item->Tipo_Documento,
-                        'documento_numero' => $item->Nro_Documento,
-                        'tercero_id' => $item->Id_Tercero,
-                        'tercero_razon_social' => $item->Razon_Social,
-                        'sucursal_descripcion' => $item->Descripcion_Sucursal,
-                        'fecha_documento' => $item->Fecha_Documento,
-                        'producto_id' => $item->Item,
-                        'referencia' => $item->Referencia,
-                        'descripcion' => $item->Descripcion,
-                        'precio_unitario' => $item->Precio_Unitario,
-                        'cantidad' => $item->Cantidad_Pedida,
-                        'valor' => $item->Valor_Bruto,
-                        'descuento' => $item->Descuento,
-                        'fecha_creacion' => $fecha_creacion,
-                    ];
-                    
-                    array_push($datos, $nuevo_item);
-                }
-
-                // Si hay datos, se borran los registros anteriores
-                if(!empty($datos)) {
-                    $this->productos_model->eliminar('productos_pedidos', ["fecha_documento" => $filtro_fecha]);
-                    $total_items = $this->productos_model->crear('productos_pedidos', $datos);
-                }
-            }
-
-            $tiempo_final = microtime(true);
-
-            $resultado = [
-                'fecha' => $filtro_fecha,
-                'items' => number_format($total_items, 0, '', '.'),
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos"
-            ];
-            
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 10,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => json_encode($resultado)
-            ]);
-
-            print json_encode($resultado);
-
-            $this->db->close();
-
-            return http_response_code(200);
-        } catch (\Throwable $error) {
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 11,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            print json_encode([
-                'error' => true,
-                'descripcion' => 'Ocurrió un error al ejecutar el script'
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-
-    /**
-     * Importa de Siesa V2 las cuentas por pagar de los proveedores
-     */
-    function importar_proveedores_cuentas_por_pagar($numero_documento) {
-        $tiempo_inicial = microtime(true);
-        $total_items = 0;
-
-        try {
-            $codigo = 0;
-            $pagina = 1;
-            $items_almacenados = 0;
-
-            // Eliminamos todos los ítems asociados al proveedor
-            $this->proveedores_model->eliminar('api_cuentas_por_pagar', ['f200_id' => $numero_documento]);
-
-            // Mientras la API de Siesa retorne código 0 (Registros encontrados)
-            while ($codigo == 0) {
-                $resultado = json_decode(obtener_cuentas_por_pagar_api(['pagina' => $pagina, 'numero_documento' => $numero_documento]));
-
-                $codigo = $resultado->codigo;
-                $nuevas_cuentas = [];
-
-                if($codigo == 0) {
-                    $cuentas = $resultado->detalle->Table;
-
-                    foreach($cuentas as $cuenta) {
-                        array_push($nuevas_cuentas, $cuenta);
-
-                        $total_items++;
-                    }
-
-                    $items_almacenados += $this->proveedores_model->insertar_batch('api_cuentas_por_pagar', $nuevas_cuentas);
-                    
-                    $pagina++;
-                } else {
-                    $codigo = '-1';
-                    break;
-                }
-            }
-            
-            $tiempo_final = microtime(true);
-
-            $respuesta = [
-                'log_tipo_id' => 75,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => "$items_almacenados registros actualizados",
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-            ];
-
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', $respuesta);
-
-            print json_encode($respuesta);
-
-            return http_response_code(200);
-        } catch (\Throwable $th) {
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 74,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-
-    /**
-     * Descarga todos los terceros de Siesa,
-     * recorriendo cada página e insertando en
-     * la base de datos el resultado por cada página
-     */
-    function importar_terceros_api() {
-        $tiempo_inicial = microtime(true);
-
-        $codigo = 0;
-        $pagina = 1;
-        $total_items = 0;
-
-        try {
-            // Primero, eliminamos todos los ítems
-            $this->configuracion_model->eliminar('terceros', ['id']);
-
-            // Mientras obtenga resultados la consulta
-            while ($codigo == 0) {
-                $resultado = json_decode(obtener_terceros_api(['pagina' => $pagina]));
-                $codigo = $resultado->codigo;
-
-                // Si el resultado es exitoso
-                if($codigo == 0) {
-                    $terceros = $resultado->detalle->Table;
-
-                    $total_items += count($terceros);
-
-                    // Recorrido de todos los registros de la página
-                    $this->configuracion_model->crear('terceros_api', $terceros);
-                    
-                    $pagina++;
-                } else {
-                    $codigo = '-1';
-                    break;
-                }
-            }
-
-            $tiempo_final = microtime(true);
-
-            $respuesta = [
-                'log_tipo_id' => 40,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => "$total_items registros actualizados",
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-            ];
-
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', $respuesta);
-
-            print json_encode($respuesta);
-            return http_response_code(200);
-        } catch (\Throwable $th) {
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 41,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-    
-    /**
-     * Importa de Siesa los movimientos contables
-     * de un tercero
-     */
-    function importar_movimientos_contables_api($numero_documento) {
-        $tiempo_inicial = microtime(true);
-        
-        $anio_anterior = date('Y') - 1;
-        $codigo = 0;
-        $pagina = 1;
-        $total_items = 0;
-        $datos = [
-            'numero_documento' => $numero_documento,
-            'fecha_inicial' => "$anio_anterior-01-01",
-            'fecha_final' => "$anio_anterior-12-31",
-            'filtro_retenciones' => true,
-        ];
-
-        try {
-            // Eliminamos todos los ítems asociados al tercero
-            $this->clientes_model->eliminar('clientes_facturas_movimientos', ['f200_nit' => $numero_documento]);
-
-            // Mientras la API de Siesa retorne código 0 (Registros encontrados)
-            while ($codigo == 0) {
-                $datos['pagina'] = $pagina; 
-                $resultado = json_decode(obtener_movimientos_contables_api($datos));
-                $codigo = $resultado->codigo;
-                
-                if($codigo == 0) {
-                    $movimientos = $resultado->detalle->Table;
-                    $total_items += count($movimientos);
-
-                    $this->clientes_model->crear('clientes_facturas_movimientos_proveedores', $movimientos);
-
-                    $pagina++;
-                } else {
-                    $codigo = '-1';
-                    break;
-                }
-            }
-
-            $tiempo_final = microtime(true);
-
-            $respuesta = [
-                'log_tipo_id' => 86,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-                'observacion' => "$total_items registros actualizados",
-                'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-            ];
-
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', $respuesta);
-
-            print json_encode($respuesta);
-            return http_response_code(200);
-        } catch (\Throwable $th) {
-            print_r($th);
-            // Se agrega el registro en los logs
-            $this->configuracion_model->crear('logs', [
-                'log_tipo_id' => 85,
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-
-            return http_response_code(400);
-        }
-    }
-
-    function erp($tipo) {
-        switch ($tipo) {
-            // Desde la API estándar API_v2_Ventas_Pedidos importa los pedidos
-            // para que posteriormente puedan ser creadas facturas de manera automática
-            case 'importar_ventas_pedidos':
-                $tiempo_inicial = microtime(true);
-                $total_items = 0;
-
-                try {
-                    $codigo = 0;
-                    $pagina = 1;
-                    $items_almacenados = 0;
-
-                    // Mientras la API de Siesa retorne código 0 (Registros encontrados)
-                    while ($codigo == 0) {
-                        $resultado = json_decode(obtener_pedidos_api_estandar(['pagina' => $pagina, 'estado_id' => 3, 'filtro_fecha' => true]));
-                        $codigo = $resultado->codigo;
-                        $items = [];
-
-                        if($codigo == 0) {
-                            $registros = $resultado->detalle->Table;
-
-                            foreach($registros as $item) {
-                                // Antes de agregar el ítem, se consulta primero si existe el ítem ya creado
-                                $existe_item = $this->configuracion_model->obtener('erp_ventas_pedidos', ['f430_rowid' => $item->f430_rowid, 'f120_id' => $item->f120_id]);
-
-                                // Si no existe todavía en la base de datos, se agrega al arreglo para que se cree
-                                if(empty($existe_item)) array_push($items, $item);
-
-                                $total_items++;
-                            }
-
-                            // Si hay datos en el arreglo, se crean
-                            if(!empty($items)) $items_almacenados += $this->configuracion_model->crear('erp_ventas_pedidos_batch', $items);
-                            
-                            $pagina++;
-                        } else {
-                            $codigo = '-1';
-                            break;
-                        }
-                    }
-
-                    $tiempo_final = microtime(true);
-
-                    $respuesta = [
-                        'log_tipo_id' => 93,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                        'observacion' => "$items_almacenados registros creados",
-                        'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-                    ];
-
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', $respuesta);
-
-                    print json_encode($respuesta);
-
-                    return http_response_code(200);
-                } catch (\Throwable $th) {
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', [
-                        'log_tipo_id' => 94,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                    ]);
-
-                    return http_response_code(400);
-                }
-            break;
-
-            // Desde la API estándar API_v2_Compras_Ordenes importa las órdenes de compra
-            case 'importar_compras_ordenes':
-                $tiempo_inicial = microtime(true);
-                $total_items = 0;
-
-                try {
-                    $codigo = 0;
-                    $pagina = 1;
-                    $items_almacenados = 0;
-
-                    // Mientras la API de Siesa retorne código 0 (Registros encontrados)
-                    while ($codigo == 0) {
-                        $resultado = json_decode(obtener_ordenes_compra(['pagina' => $pagina, 'filtro_fecha' => false]));
-
-                        $codigo = $resultado->codigo;
-                        $items = [];
-
-                        if($codigo == 0) {
-                            $registros = $resultado->detalle->Table;
-
-                            foreach($registros as $item) {
-                                // Antes de agregar el ítem, se consulta primero si existe el ítem ya creado
-                                $existe_item = $this->configuracion_model->obtener('erp_compras_ordenes', ['f420_rowid' => $item->f420_rowid, 'f120_id' => $item->f120_id]);
-
-                                // Si no existe todavía en la base de datos, se agrega al arreglo para que se cree
-                                if(empty($existe_item)) array_push($items, $item);
-
-                                $total_items++;
-                            }
-
-                            // Si hay datos en el arreglo, se crean
-                            if(!empty($items)) $items_almacenados += $this->configuracion_model->crear('erp_compras_ordenes_batch', $items);
-                            
-                            $pagina++;
-                        } else {
-                            $codigo = '-1';
-                            break;
-                        }
-                    }
-
-                    $tiempo_final = microtime(true);
-
-                    $respuesta = [
-                        'log_tipo_id' => 95,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                        'observacion' => "$items_almacenados registros creados",
-                        'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-                    ];
-
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', $respuesta);
-
-                    print json_encode($respuesta);
-
-                    return http_response_code(200);
-                } catch (\Throwable $th) {
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', [
-                        'log_tipo_id' => 96,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                    ]);
-
-                    return http_response_code(400);
-                }
-            break;
-            
-            // Desde la API estándar API_v2_Bodegas importa las bodegas existentes
-            case 'importar_bodegas':
-                $tiempo_inicial = microtime(true);
-                $total_items = 0;
-                
-                try {
-                    $codigo = 0;
-                    $pagina = 1;
-                    $items_almacenados = 0;
-
-                    // Mientras la API de Siesa retorne código 0 (Registros encontrados)
-                    while ($codigo == 0) {
-                        $resultado = json_decode(obtener_bodegas_api(['pagina' => $pagina]));
-                        $codigo = $resultado->codigo;
-                        $items = [];
-
-                        if($codigo == 0) {
-                            $registros = $resultado->detalle->Table;
-
-                            foreach($registros as $item) {
-                                // Antes de agregar el ítem, se consulta primero si existe el ítem en la base de datos
-                                $existe_item = $this->configuracion_model->obtener('erp_bodegas', ['f150_rowid' => $item->f150_rowid]);
-
-                                // Si no existe todavía en la base de datos, se agrega al arreglo para que se cree
-                                if(empty($existe_item)) array_push($items, $item);
-
-                                $total_items++;
-                            }
-
-                            // Si hay datos en el arreglo, se crean
-                            if(!empty($items)) {
-                                $items_almacenados += $this->configuracion_model->crear('erp_bodegas_batch', $items);
-                            }
-                            
-                            $pagina++;
-                        } else {
-                            $codigo = '-1';
-                            break;
-                        }
-                    }
-
-                    $tiempo_final = microtime(true);
-
-                    $respuesta = [
-                        'log_tipo_id' => 97,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                        'observacion' => "$items_almacenados registros creados",
-                        'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-                    ];
-
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', $respuesta);
-
-                    print json_encode($respuesta);
-
-                    return http_response_code(200);
-                } catch (\Throwable $th) {
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', [
-                        'log_tipo_id' => 98,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                    ]);
-
-                    return http_response_code(400);
-                }
-            break;
-
-            // Desde la API estándar API_v2_ListasDePrecios importa las listas de precios existentes
-            case 'importar_listas_precios':
-                $tiempo_inicial = microtime(true);
-                $total_items = 0;
-                
-                try {
-                    $codigo = 0;
-                    $pagina = 1;
-                    $items_almacenados = 0;
-
-                    // Mientras la API de Siesa retorne código 0 (Registros encontrados)
-                    while ($codigo == 0) {
-                        $resultado = json_decode(obtener_listas_precios_api(['pagina' => $pagina]));
-                        $codigo = $resultado->codigo;
-                        $items = [];
-
-                        if($codigo == 0) {
-                            $registros = $resultado->detalle->Table;
-
-                            foreach($registros as $item) {
-                                // Antes de agregar el ítem, se consulta primero si existe el ítem en la base de datos
-                                $existe_item = $this->configuracion_model->obtener('erp_listas_precios', ['f112_descripcion' => $item->f112_descripcion]);
-
-                                // Si no existe todavía en la base de datos, se agrega al arreglo para que se cree
-                                if(empty($existe_item)) array_push($items, $item);
-
-                                $total_items++;
-                            }
-
-                            // Si hay datos en el arreglo, se crean
-                            if(!empty($items)) {
-                                $items_almacenados += $this->configuracion_model->crear('erp_listas_precios_batch', $items);
-                            }
-                            
-                            $pagina++;
-                        } else {
-                            $codigo = '-1';
-                            break;
-                        }
-                    }
-
-                    $tiempo_final = microtime(true);
-
-                    $respuesta = [
-                        'log_tipo_id' => 99,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                        'observacion' => "$items_almacenados registros creados",
-                        'tiempo' => round($tiempo_final - $tiempo_inicial, 2)." segundos",
-                    ];
-
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', $respuesta);
-
-                    print json_encode($respuesta);
-
-                    return http_response_code(200);
-                } catch (\Throwable $th) {
-                    // Se agrega el registro en los logs
-                    $this->configuracion_model->crear('logs', [
-                        'log_tipo_id' => 100,
-                        'fecha_creacion' => date('Y-m-d H:i:s'),
-                    ]);
-
-                    return http_response_code(400);
-                }
-            break;
-            
-            default:
-                print json_encode([
-                    'exito' => false,
-                    'mensaje' => 'Ningún webhook encontrado'
-                ]);
-
-                return http_response_code(400);
         }
     }
 }

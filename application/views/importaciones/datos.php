@@ -81,10 +81,11 @@ if (empty($importaciones)) { ?>
 
                         <td class="text-right">
                             <div class="btn-group" role="group">
-                                <a href="<?php echo site_url('importaciones/ver/' . $item->id . '#bitacoras'); ?>" 
+                                 <a href="<?php echo site_url('importaciones/ver/' . $item->id . '#bitacoras'); ?>" 
                                     class="btn btn-sm btn-light text-primary shadow-sm"
-                                    title="Ver Bitácoras">
-                                    <i class="fas fa-clipboard-list"></i>
+                                    title="Ver Detalle de Bitácora">
+                                    <i class="fas fa-eye"></i>
+                               
                                 </a>
                                 <a href="<?php echo site_url('importaciones/ver/' . $item->id); ?>" class="btn btn-sm btn-light text-secondary" title="Ver Detalle">
                                     <i class="far fa-eye"></i>
@@ -92,8 +93,8 @@ if (empty($importaciones)) { ?>
                                 <a href="<?php echo site_url('importaciones/editar/' . $item->id); ?>" class="btn btn-sm btn-light text-primary" title="Editar">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-light text-danger" onclick="confirmarEliminar(<?php echo $item->id; ?>)" title="Eliminar">
-                                    <i class="far fa-trash-alt"></i>
+                                <button type="button" class="btn btn-sm btn-light text-danger" onclick="eliminarImportacion(<?php echo $item->id; ?>)" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </td>
@@ -110,9 +111,29 @@ if (empty($importaciones)) { ?>
 
 <script>
     // Script simple para eliminar (puedes moverlo a tu archivo JS global)
-    function confirmarEliminar(id) {
-        if (confirm('¿Estás seguro de eliminar la importación IMP-' + String(id).padStart(3, '0') + '?')) {
-            window.location.href = '<?php echo site_url("importaciones/eliminar/"); ?>' + id;
+    eliminarImportacion = async (id) => {
+        let confirmacion = await confirmar('Eliminar', `¿Está seguro de eliminar la importación IMP-${String(id).padStart(3, '0')}?`)
+        
+        if (confirmacion) {
+            let eliminar = await consulta('eliminar', {tipo: 'importaciones', id: id})
+            if (eliminar) {
+                mostrarAviso('exito', 'Importación eliminada correctamente', 5000)
+                listarImportaciones()
+            }
         }
     }
+
+    cargarBitacoraDetalle = (id = null) => {
+        cargarInterfaz('/bitacora/detalle', 'contenedor_importaciones_bitacora', {
+            id: id
+        })
+    }
+
+    listarImportacionesBitacora = () => {
+        cargarInterfaz('importaciones/bitacora/lista', 'contenedor_importaciones_bitacora')
+    }
+
+    $().ready(() => {
+        listarImportacionesBitacora()
+    })
 </script>

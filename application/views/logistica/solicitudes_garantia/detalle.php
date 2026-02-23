@@ -14,8 +14,8 @@
     <div class="container">
         <div class="card mb-lg-0">
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-3">
-                    1 - DATOS DEL SOLICITANTE
+                <div class="tag-badge tag-badge--new badge_formulario mb-3">
+                    1 - Datos del solicitante
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-4">
@@ -43,8 +43,8 @@
                     </div>
                 </div>
 
-                <div class="tag-badge tag-badge--theme badge_formulario mb-3 mt-2">
-                    2 - INFORMACIÓN DE LA VENTA
+                <div class="tag-badge tag-badge--new badge_formulario mb-3 mt-2">
+                    2 - Información de la venta
                 </div>
                 
                 <div class="form-row">
@@ -68,15 +68,15 @@
 
                 <!-- Contenedor para mostrar los datos del pedido -->
                 <div id="contenedor_detalle_pedido">
-                    <div class="tag-badge tag-badge--theme badge_formulario mb-3 mt-2">
-                        3 - IDENTIFICACIÓN DEL PRODUCTO
+                    <div class="tag-badge tag-badge--new badge_formulario mb-3 mt-2">
+                        3 - Identificación del producto
                     </div>
 
                     <div class="alert alert-primary mb-3">No se ha seleccionado un pedido todavía. Por favor escribe el número de la factura y haz clic en el ícono <strong><i class="fa fa-search"></i></strong></div>
                 </div>
 
-                <div class="tag-badge tag-badge--theme badge_formulario mb-3 mt-2">
-                    4 - MOTIVO DE LA GARANTÍA
+                <div class="tag-badge tag-badge--new badge_formulario mb-3 mt-2">
+                    4 - Motivo de la garantía
                 </div>
                 <div class="form-row">
                     <div class="form-group col-lg-4">
@@ -109,8 +109,8 @@
                     </div>
                 </div>
 
-                <div class="tag-badge tag-badge--theme badge_formulario mb-3 mt-2">
-                    5 - LOGÍSTICA DE DEVOLUCIÓN
+                <div class="tag-badge tag-badge--new badge_formulario mb-3 mt-2">
+                    5 - Logística de devolución
                 </div>
                 <div class="form-row">
                     <div class="form-group col-lg-6">
@@ -151,8 +151,8 @@
                 </div>
 
                 <?php if(!isset($solicitud)) { ?>
-                    <div class="tag-badge tag-badge--theme badge_formulario mb-3 mt-2">
-                        6 - DOCUMENTOS A ADJUNTAR
+                    <div class="tag-badge tag-badge--new badge_formulario mb-3 mt-2">
+                        6 - Documentos a adjuntar
                     </div>
                     <div class="form-row">
                         <table class="table table-sm table-bordered">

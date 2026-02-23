@@ -73,6 +73,20 @@ class Logistica extends MY_Controller {
         }
     }
 
+    /**
+     * Gestión de pedidos
+     *
+     * @return void
+     */
+    function pedidos() {
+        switch ($this->uri->segment(3)) {
+            case 'ver':
+                $this->data['contenido_principal'] = 'logistica/pedidos/index';
+                $this->load->view('core/body', $this->data);
+                break;
+        }
+    }
+
     function obtener_datos_tabla() {
         if (!$this->input->is_ajax_request()) redirect('inicio');
 
@@ -96,6 +110,36 @@ class Logistica extends MY_Controller {
         }
 
         switch ($tipo) {
+            case "pedidos":
+                // Se definen los filtros
+                $datos = [
+                    "contar" => true,
+                    "busqueda" => $busqueda,
+                    "filtros_personalizados" => $this->input->get('filtros_personalizados'),
+                ];
+
+                // De acuerdo a los filtros se obtienen el número de registros filtrados
+                $total_resultados = $this->logistica_model->obtener("pedidos", $datos);
+
+                // Se quita campo para solo contar los registros
+                unset($datos["contar"]);
+
+                // Se agregan campos para limitar y ordenar
+                $datos["indice"] = $indice;
+                $datos["cantidad"] = $cantidad;
+                if ($ordenar) $datos["ordenar"] = $ordenar;
+
+                // Se obtienen los registros
+                $resultados = $this->logistica_model->obtener("pedidos", $datos);
+
+                print json_encode([
+                    "draw" => $this->input->get("draw"),
+                    "recordsTotal" => $total_resultados,
+                    "recordsFiltered" => $total_resultados,
+                    "data" => $resultados
+                ]);
+            break;
+
             case "solicitudes_garantia":
                 // Se definen los filtros
                 $datos = [

@@ -78,7 +78,7 @@ if($this->uri->segment(4)) {
                 </div>
                 <hr>
                 <div class="form-row">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-4">
                         <label for="tercero_estado">Estado *</label>
                         <select id="tercero_estado" class="form-control">
                             <option value="">Seleccione...</option>
@@ -86,11 +86,18 @@ if($this->uri->segment(4)) {
                             <option value="0">Inactivo</option>
                         </select>
                     </div>
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-4">
                         <label for="usuario_perfil">Perfil *</label>
                         <select id="usuario_perfil" class="form-control">
                             <option value="">Seleccione...</option>
                             <?php foreach($this->configuracion_model->obtener('perfiles') as $perfil) echo "<option value='$perfil->id'>$perfil->nombre</option>"; ?>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="usuario_lista_precio">Lista de precios</label>
+                        <select id="usuario_lista_precio" class="form-control">
+                            <option value="">Seleccione...</option>
+                            <?php foreach($this->configuracion_model->obtener('erp_listas_precios') as $lista_precio) echo "<option value='$lista_precio->id'>$lista_precio->nombre</option>"; ?>
                         </select>
                     </div>
                     <!-- <div class="form-group col-md-6 mb-2">
@@ -120,6 +127,7 @@ if($this->uri->segment(4)) {
         $('#tercero_tipo_identificacion_id').val(<?php echo $tercero->usuario_identificacion_tipo_id; ?>)
         $('#tercero_estado').val(<?php echo $tercero->estado; ?>)
         $('#usuario_perfil').val(<?php echo $tercero->perfil_id; ?>)
+        $('#usuario_lista_precio').val('<?php echo $tercero->lista_precio; ?>')
     </script>
 <?php } ?>
 
@@ -134,6 +142,9 @@ if($this->uri->segment(4)) {
             $('#tercero_estado'),
             $('#usuario_perfil'),
         ]
+
+        // Si el perfil es compra a crédito, la lista de precios es obligatoria
+        if($('#usuario_perfil').val() == 7) camposObligatorios.push($('#usuario_lista_precio'))
 
         if (!validarCamposObligatorios(camposObligatorios)) return false
 
@@ -156,6 +167,7 @@ if($this->uri->segment(4)) {
             perfil_id: $('#usuario_perfil').val(),
             login: $('#usuario_login').val(),
             clave: $('#usuario_clave').val(),
+            lista_precio: $('#usuario_lista_precio').val(),
         }
 
         if(!$('#tercero_id').val()) {

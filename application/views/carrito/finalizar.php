@@ -112,6 +112,66 @@ if($this->session->userdata('usuario_id')) {
                         </div>
                         <hr>
 
+                        <input type="hidden" id="pedido_total_pago" value="<?php echo $this->cart->total(); ?>">
+
+                        <?php if(isset($this->data['permisos']) && in_array(['pedidos' => 'pedidos_credito_gestionar'], $this->data['permisos'])) { ?>
+                            <div class="form-check mb-3">
+                                <span class="input-check form-check-input">
+                                    <span class="input-check__body">
+                                        <input class="input-check__input" type="radio" id="checkout_venta_credito" name="metodo_pago">
+                                        <span class="input-check__box"></span>
+                                        <span class="input-check__icon">
+                                            <svg width="9px" height="7px">
+                                                <path d="M9,1.395L3.46,7L0,3.5L1.383,2.095L3.46,4.2L7.617,0L9,1.395Z" />
+                                            </svg>
+                                        </span>
+                                    </span>
+                                </span>
+                                <label class="form-check-label" for="checkout_venta_credito">
+                                    Compra a crédito
+                                </label>
+                                <img src="<?php echo base_url(); ?>images/pago_credito.webp" alt="Todos los medios de pago" width="100%" class="mt-3">
+                            </div>
+                        <?php } ?>
+
+                        <!-- Pagar con todos los medios de pago -->
+                        <div class="form-check mb-3">
+                            <span class="input-check form-check-input">
+                                <span class="input-check__body">
+                                    <input class="input-check__input" type="radio" name="metodo_pago" id="pago_todos" checked>
+                                    <span class="input-check__box"></span>
+                                    <span class="input-check__icon">
+                                        <svg width="9px" height="7px">
+                                            <path d="M9,1.395L3.46,7L0,3.5L1.383,2.095L3.46,4.2L7.617,0L9,1.395Z" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </span>
+                            <label class="form-check-label" for="pago_todos">
+                                Pagar con PSE, Nequi y tarjetas de crédito
+                            </label><br>
+                            <img src="<?php echo base_url(); ?>images/formas_pago.webp" alt="Todos los medios de pago" width="100%" class="mt-3">
+                        </div>
+
+                        <!-- Compra ahora y paga después -->
+                        <div class="form-check mb-3">
+                            <span class="input-check form-check-input">
+                                <span class="input-check__body">
+                                    <input class="input-check__input" type="radio" name="metodo_pago" id="pagos_sumas">
+                                    <span class="input-check__box"></span>
+                                    <span class="input-check__icon">
+                                        <svg width="9px" height="7px">
+                                            <path d="M9,1.395L3.46,7L0,3.5L1.383,2.095L3.46,4.2L7.617,0L9,1.395Z" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </span>
+                            <label class="form-check-label" for="pagos_sumas">
+                                Compra ahora - Paga después
+                            </label><br>
+                            <img src="<?php echo base_url(); ?>images/sumas.webp" alt="Formas de pago" width="100%" class="mt-3">
+                        </div><hr>
+
                         <div class="row mb-3">
                             <div class="col-3">
                                 <div class="block-features__item-icon">
@@ -125,27 +185,6 @@ if($this->session->userdata('usuario_id')) {
                                 </div>
                             </div>
                         </div>
-
-                        <input type="hidden" id="pedido_total_pago" value="<?php echo $this->cart->total(); ?>">
-
-                        <?php if(isset($this->data['permisos']) && in_array(['pedidos' => 'pedidos_credito_gestionar'], $this->data['permisos'])) { ?>
-                            <div class="form-check mb-3">
-                                <span class="input-check form-check-input">
-                                    <span class="input-check__body">
-                                        <input class="input-check__input" type="checkbox" id="checkout_venta_credito">
-                                        <span class="input-check__box"></span>
-                                        <span class="input-check__icon">
-                                            <svg width="9px" height="7px">
-                                                <path d="M9,1.395L3.46,7L0,3.5L1.383,2.095L3.46,4.2L7.617,0L9,1.395Z" />
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </span>
-                                <label class="form-check-label" for="checkout_venta_credito">
-                                    Venta a crédito
-                                </label>
-                            </div>
-                        <?php } ?>
 
                         <button type="submit" class="btn btn-primary btn-xl btn-block" onClick="javascript:guardarFactura()" id="btn_pagar" disabled>
                             Finalizar pedido
@@ -259,10 +298,11 @@ if($this->session->userdata('usuario_id')) {
         if (recibo.resultado) {
             // Se crean los ítems de la factura
             let reciboItems = await consulta('crear', {tipo: 'recibos_detalle', 'recibo_id': recibo.resultado, lista_precio: datosRecibo.lista_precio}, false)
+            let tipoPago = ($(`#pago_todos`).is(':checked')) ? 'gateway' : 'agregador'
 
             // Si es pedido a contado, se abre modal de Wompi
             if(!$(`#checkout_venta_credito`).is(':checked')) {
-                if (reciboItems.resultado) cargarInterfaz('carrito/pago', 'contenedor_pago', {id: recibo.resultado})
+                if (reciboItems.resultado) cargarInterfaz('carrito/pago', 'contenedor_pago', {id: recibo.resultado, tipo_pago: tipoPago})
             }
 
             // Si el tercero cliente no existe (sin sucursales), se va a crear
@@ -361,7 +401,7 @@ if($this->session->userdata('usuario_id')) {
             // $('#checkout_documento_numero').val($('#sesion_documento_numero').val())
 
             // Carga los datos del cliente
-            cargarDatosCliente()
+            // cargarDatosCliente()
         }
     })
 </script>

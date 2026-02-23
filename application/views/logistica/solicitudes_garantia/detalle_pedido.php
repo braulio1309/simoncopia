@@ -71,8 +71,8 @@ $tabla .= '</tbody></table>';
 </div>
 
 <div class="form-row">
-    <div class="tag-badge tag-badge--theme badge_formulario mb-3 mt-2">
-        3 - IDENTIFICACIÓN DEL PRODUCTO
+    <div class="tag-badge tag-badge--new badge_formulario mb-3 mt-2">
+        3 - Identificación del producto
     </div>
 
     <div class="form-group col-lg-12">

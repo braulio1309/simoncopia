@@ -57,13 +57,14 @@ class Whatsapp_api {
             ]
         ];
         
+        
         return $this->enviar_peticion($url, $datos);
     }
     
     /**
      * Envía un mensaje con imagen
      */
-    public function enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, $lenguaje = 'es', $url_imagen) {
+    public function enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, $lenguaje = 'es', $url_imagen, $parametros = []) {
         $url = "https://graph.facebook.com/{$this->version_api}/{$this->identificador_numero_telefonico}/messages";
 
         $componentes = [];

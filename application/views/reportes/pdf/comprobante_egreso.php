@@ -4,7 +4,7 @@ use setasign\Fpdi\Fpdi;
 // Crear una instancia de FPDI
 $pdf = new FPDI('P', 'mm', 'LEGAL');
 
-$cuenta = $this->proveedores_model->obtener("api_cuentas_por_pagar", ["id" => $id]);
+$cuenta = $this->proveedores_model->obtener("erp_cuentas_por_pagar", ["id" => $id]);
 
 // Cargar el archivo PDF como plantilla
 $pdf->AddPage();

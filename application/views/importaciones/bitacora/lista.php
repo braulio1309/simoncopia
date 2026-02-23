@@ -24,6 +24,18 @@
                     className: 'text-right',
                     width: '70px'
                 },
+                {
+                    title: `Importacion ID`,
+                    data: 'importacion_id',
+                    className: 'text-right',
+                    width: '70px'
+                },
+                 {
+                    title: `Proveedor`,
+                    data: 'proveedor',
+                    className: 'text-right',
+                    width: '70px'
+                },
                 { 
                     title: `Creación`,
                     data: null, 

@@ -55,7 +55,7 @@
         $('#contenedor_mensaje_carga').html(`<button class='btn btn-muted btn-loading btn-xs btn-icon'></button> Preparando la visualización de los datos...`)
 
         // Ejecución del webhook que extrae los datos de la API de Siesa
-        fetch(`${$("#site_url").val()}webhooks/importar_proveedores_cuentas_por_pagar/${numero}`, opcionesPeticion)
+        fetch(`${$("#site_url").val()}tareas/erp/importar_cuentas_por_pagar/${numero}`, opcionesPeticion)
             .then(respuesta => {
                 if (!respuesta.ok) {
                     $('#btn_cuentas_por_pagar').removeClass('btn-loading').attr('disabled', false)

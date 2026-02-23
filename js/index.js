@@ -217,6 +217,11 @@ generarReporte = (tipo, datos) => {
     })
 
     switch (tipo) {
+        case 'excel/consecutivos_detalle':
+            agregarLog(110, datos.comprobante_contable_tarea_id)
+            url = `${$('#base_url').val()}reportes/${tipo}/${datos.comprobante_contable_tarea_id}`
+        break;
+
         case 'excel/facturas':
             agregarLog(42, datos.numero_documento)
             location.assign(`${$('#base_url').val()}reportes/${tipo}/${datos.numero_documento}`)

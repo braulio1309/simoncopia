@@ -229,7 +229,8 @@ if($id_importacion) {
             $('#razon_social'),
             $('#valor_total'),
             $('#moneda_preferida'),
-            $('#pais_origen')
+            $('#pais_origen'),
+            $('#estado_id'),
         ];
 
         if (!validarCamposObligatorios(camposObligatorios)) return false;

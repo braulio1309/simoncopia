@@ -10,7 +10,7 @@
     <div class="container">
         <div class="card mb-lg-0">
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2 mt-2">
+                <div class="tag-badge tag-badge--new badge_formulario mb-2 mt-2">
                     DATOS BÁSICOS
                 </div>
                 <div class="form-row mb-2">
@@ -131,7 +131,7 @@
                 <!-- Si no es vendedor -->
                 <?php if(!$this->session->userdata('codigo_vendedor') || $this->session->userdata('codigo_vendedor') == '0') { ?>
                     <div class="card-divider"></div>
-                    <div class="tag-badge tag-badge--theme badge_formulario mb-2 mt-2">
+                    <div class="tag-badge tag-badge--new badge_formulario mb-2 mt-2">
                         Crear usuario y contraseña
                     </div>
                     <div class="alert alert-primary mb-3">
@@ -181,7 +181,7 @@
 
             <div class="card-divider"></div>
             <div class="card-body card-body--padding--1">
-                <div class="tag-badge tag-badge--theme badge_formulario mb-2 mt-2">
+                <div class="tag-badge tag-badge--new badge_formulario mb-2 mt-2">
                     Datos que necesitamos para enviar tus productos
                 </div>
                 <div class="form-row">

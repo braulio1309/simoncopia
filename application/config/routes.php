@@ -69,3 +69,4 @@ $route['contabilidad/comprobantes'] = 'contabilidad/comprobantes/validacion';
 $route['logistica/garantias'] = 'logistica/solicitudes_garantia';
 $route['logistica/garantias/ver'] = 'logistica/solicitudes_garantia/ver';
 $route['logistica/garantias/ver/(:num)/(:any)'] = 'logistica/solicitudes_garantia/ver/$1/$2';
+

@@ -14,7 +14,7 @@
             ajax: {
                 url: `${$("#site_url").val()}proveedores/obtener_datos_tabla`,
                 data: datos => {
-                    datos.tipo = 'api_cuentas_por_pagar'
+                    datos.tipo = 'erp_cuentas_por_pagar'
                     datos.numero_documento = <?php echo $datos['numero_documento']; ?>
 
                     // Filtros personalizados

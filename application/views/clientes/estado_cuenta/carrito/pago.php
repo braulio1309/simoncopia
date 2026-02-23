@@ -5,7 +5,7 @@ $llave_integridad = generar_llave_integridad([
     $recibo->token,
     (floatval($recibo->valor)) * 100,
     'COP',
-    $this->config->item('api_wompi')['secret_integridad'],
+    $this->config->item("api_wompi_{$datos['tipo_pago']}")['secret_integridad'],
 ]);
 ?>
 
@@ -14,7 +14,7 @@ $llave_integridad = generar_llave_integridad([
         currency: 'COP',
         amountInCents: parseFloat(<?php echo $recibo->valor; ?>) * 100,
         reference: '<?php echo $recibo->token; ?>',
-        publicKey: '<?php echo $this->config->item('api_wompi')['llave_publica']; ?>',
+        publicKey: '<?php echo $this->config->item("api_wompi_{$datos['tipo_pago']}")['llave_publica']; ?>',
         signature: {integrity : '<?php echo $llave_integridad; ?>'},
         redirectUrl: `${$('#site_url').val()}clientes/respuesta?referencia=<?php echo $recibo->token; ?>`, // Opcional
         // expirationTime: '2023-06-09T20:28:50.000Z', // Opcional
