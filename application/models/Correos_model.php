@@ -42,6 +42,40 @@ class Correos_model extends CI_Model {
     }
 
     /**
+     * Lista las carpetas de correo disponibles desde Microsoft Graph
+     */
+    function listar_carpetas($token) {
+        $carpetas = [];
+        $url = "https://graph.microsoft.com/v1.0/users/{$this->email_usuario}/mailFolders?\$top=100";
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer {$token}",
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if($http_code == 200) {
+            $resultado = json_decode($response, true);
+            foreach($resultado['value'] as $carpeta) {
+                $carpetas[] = [
+                    'id'   => $carpeta['id'],
+                    'nombre' => $carpeta['displayName'],
+                    'total' => $carpeta['totalItemCount'] ?? 0
+                ];
+            }
+        }
+
+        return $carpetas;
+    }
+
+    /**
      * Busca una carpeta por nombre
      */
     function buscar_carpeta($token, $nombre_carpeta) {
@@ -81,9 +115,19 @@ class Correos_model extends CI_Model {
     /**
      * Obtiene mensajes con adjuntos de una carpeta
      */
-    function obtener_mensajes_con_adjuntos($token, $carpeta_id) {
+    function obtener_mensajes_con_adjuntos($token, $carpeta_id, $fecha_inicio = null, $fecha_fin = null) {
+        $filtros = ["hasAttachments eq true"];
+
+        if(!empty($fecha_inicio) && ($ts = strtotime($fecha_inicio)) !== false) {
+            $filtros[] = "receivedDateTime ge " . date('Y-m-d', $ts) . "T00:00:00Z";
+        }
+        if(!empty($fecha_fin) && ($ts = strtotime($fecha_fin)) !== false) {
+            $filtros[] = "receivedDateTime le " . date('Y-m-d', $ts) . "T23:59:59Z";
+        }
+
+        $filter_str = urlencode(implode(' and ', $filtros));
         $url = "https://graph.microsoft.com/v1.0/users/{$this->email_usuario}/mailFolders/{$carpeta_id}/messages";
-        $url .= "?\$filter=hasAttachments%20eq%20true&\$select=id,subject,hasAttachments";        
+        $url .= "?\$filter={$filter_str}&\$select=id,subject,hasAttachments&\$top=50";
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -199,19 +243,30 @@ class Correos_model extends CI_Model {
     }
 
     /**
-     * Lista los archivos descargados
+     * Lista los archivos descargados desde el sistema de archivos
      */
-    function listar_archivos_descargados() {
-        try {
-            /*return $this->db
-                ->select('*')
-                ->from('correos_descargas')
-                ->order_by('fecha_descarga', 'DESC')
-                ->limit(50)
-                ->get()
-                ->result_array();*/
-        } catch(Exception $e) {
-            return [];
+    function listar_archivos_descargados($limite = 100) {
+        $ruta_base = './archivos/correos/';
+        $archivos = [];
+
+        if(!is_dir($ruta_base)) return [];
+
+        foreach(glob($ruta_base . '*/') as $carpeta_path) {
+            $carpeta = basename($carpeta_path);
+            foreach(glob($carpeta_path . '*.*') as $archivo_path) {
+                $archivos[] = [
+                    'carpeta'          => $carpeta,
+                    'nombre_procesado' => basename($archivo_path),
+                    'ruta'             => str_replace('./', '', $archivo_path),
+                    'fecha_descarga'   => date('Y-m-d H:i:s', filemtime($archivo_path))
+                ];
+            }
         }
+
+        usort($archivos, function($a, $b) {
+            return strtotime($b['fecha_descarga']) - strtotime($a['fecha_descarga']);
+        });
+
+        return array_slice($archivos, 0, $limite);
     }
 }
