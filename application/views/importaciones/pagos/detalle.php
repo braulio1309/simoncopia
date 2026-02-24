@@ -10,6 +10,9 @@ if ($id_pago) {
 $tipos_pago = $this->importaciones_model->obtener('importaciones_pagos_tipos');
 $importaciones = $this->importaciones_model->obtener('importaciones');
 $usuarios = $this->configuracion_model->obtener('usuarios', ['activo' => 1]);
+
+// Pre-selección de importación (cuando se llega desde el detalle de una importación)
+$importacion_id_preseleccionado = isset($importacion_id) ? $importacion_id : ($pago ? $pago->importacion_id : null);
 ?>
 
 <style>
@@ -151,7 +154,7 @@ $usuarios = $this->configuracion_model->obtener('usuarios', ['activo' => 1]);
                     <select class="form-control" id="importacion_id" name="importacion_id" required>
                         <option value="">Seleccionar importación</option>
                         <?php foreach ($importaciones as $imp): ?>
-                            <option value="<?php echo $imp->id; ?>" <?php echo ($pago && $pago->importacion_id == $imp->id) ? 'selected' : ''; ?>>
+                            <option value="<?php echo $imp->id; ?>" <?php echo ($importacion_id_preseleccionado == $imp->id) ? 'selected' : ''; ?>>
                                 <?php echo $imp->numero_orden_compra; ?> - <?php echo $imp->razon_social; ?>
                             </option>
                         <?php endforeach; ?>

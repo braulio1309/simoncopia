@@ -253,6 +253,7 @@ class Importaciones extends MY_Controller
 
             case 'crear':
                 $this->data['id'] = null;
+                $this->data['importacion_id'] = $id;
                 $this->data['contenido_principal'] = 'importaciones/pagos/detalle';
                 $this->load->view('core/body', $this->data);
                 break;

@@ -34,6 +34,25 @@ class Correos extends MY_Controller {
     }
 
     /**
+     * Devuelve las carpetas de correo disponibles en JSON
+     */
+    function obtener_carpetas() {
+        if(!$this->session->userdata('usuario_id')) {
+            echo json_encode(['error' => true, 'carpetas' => []]);
+            return;
+        }
+
+        $token = $this->correos_model->obtener_token_microsoft();
+        if(!$token) {
+            echo json_encode(['error' => true, 'mensaje' => 'No se pudo obtener el token', 'carpetas' => []]);
+            return;
+        }
+
+        $carpetas = $this->correos_model->listar_carpetas($token);
+        echo json_encode(['error' => false, 'carpetas' => $carpetas]);
+    }
+
+    /**
      * Procesa la descarga de correos desde Microsoft Graph API
      */
     function procesar() {
@@ -47,14 +66,19 @@ class Correos extends MY_Controller {
 
         $datos = json_decode($this->input->post('datos'), true);
         
-        // Validar que se reciba el nombre de la carpeta
-        if(empty($datos['nombre_carpeta'])) {
+        // Validar que se reciba el ID o nombre de la carpeta
+        if(empty($datos['carpeta_id']) && empty($datos['nombre_carpeta'])) {
             echo json_encode([
                 'error' => true,
-                'mensaje' => 'Debe proporcionar el nombre de la carpeta'
+                'mensaje' => 'Debe seleccionar o proporcionar la carpeta'
             ]);
             return;
         }
+
+        // Nombre para guardar los archivos (usar displayName o nombre_carpeta)
+        $nombre_carpeta_destino = !empty($datos['nombre_carpeta']) ? $datos['nombre_carpeta'] : preg_replace('/[^a-zA-Z0-9_\-]/', '_', $datos['carpeta_id']);
+        $fecha_inicio = !empty($datos['fecha_inicio']) ? $datos['fecha_inicio'] : null;
+        $fecha_fin    = !empty($datos['fecha_fin'])    ? $datos['fecha_fin']    : null;
 
         try {
             // 1. Obtener token de acceso
@@ -67,8 +91,12 @@ class Correos extends MY_Controller {
                 return;
             }
 
-            // 2. Buscar la carpeta en Microsoft Graph
-            $carpeta_id = $this->correos_model->buscar_carpeta($token, $datos['nombre_carpeta']);
+            // 2. Determinar el ID de carpeta: si ya viene el ID del dropdown, usarlo directamente
+            if(!empty($datos['carpeta_id'])) {
+                $carpeta_id = $datos['carpeta_id'];
+            } else {
+                $carpeta_id = $this->correos_model->buscar_carpeta($token, $datos['nombre_carpeta']);
+            }
             
             if(!$carpeta_id) {
                 echo json_encode([
@@ -78,8 +106,8 @@ class Correos extends MY_Controller {
                 return;
             }
 
-            // 3. Obtener mensajes con adjuntos de esa carpeta
-            $mensajes = $this->correos_model->obtener_mensajes_con_adjuntos($token, $carpeta_id);
+            // 3. Obtener mensajes con adjuntos de esa carpeta (con filtro de fechas)
+            $mensajes = $this->correos_model->obtener_mensajes_con_adjuntos($token, $carpeta_id, $fecha_inicio, $fecha_fin);
             if(empty($mensajes)) {
                 echo json_encode([
                     'error' => false,
@@ -97,7 +125,7 @@ class Correos extends MY_Controller {
                 $resultado = $this->correos_model->descargar_adjuntos_mensaje(
                     $token, 
                     $mensaje['id'],
-                    $datos['nombre_carpeta']
+                    $nombre_carpeta_destino
                 );
                 
                 if($resultado['exito']) {

@@ -54,6 +54,7 @@ class Importaciones_pagos_model extends CI_Model {
                 $having = "HAVING ip.id IS NOT NULL"; 
 
                 if (isset($datos['id'])) $where .= " AND ip.id = {$datos['id']} ";
+                if (isset($datos['importacion_id']) && $datos['importacion_id'] != '') $where .= " AND ip.importacion_id = " . intval($datos['importacion_id']) . " ";
 
                 // Filtros personalizados
                 $filtros_personalizados = isset($datos['filtros_personalizados']) ? $datos['filtros_personalizados'] : [];

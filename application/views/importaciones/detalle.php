@@ -145,6 +145,25 @@ if(empty($importacion)) redirect(site_url('importaciones'));
             </div>
         </div>
 
+        <!-- Sección de Pagos -->
+        <div class="row mt-4" id="pagos_importacion">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Pagos de la Importación</h5>
+                            <a href="<?php echo site_url("importaciones/pagos/crear/$id_importacion"); ?>" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Agregar Pago
+                            </a>
+                        </div>
+                        <div id="contenedor_pagos_importacion">
+                            <table class="table table-striped table-bordered table-sm" id="tabla_pagos_importacion"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sección de Bitácoras -->
         <div class="row mt-4" id="bitacoras">
             <div class="col-12">
@@ -178,7 +197,39 @@ if(empty($importacion)) redirect(site_url('importaciones'));
         cargarInterfaz('importaciones/bitacora/lista', 'contenedor_importaciones_bitacora')
     }
 
+    listarPagosImportacion = () => {
+        $('#tabla_pagos_importacion').DataTable({
+            ajax: {
+                url: `${$('#site_url').val()}importaciones_pagos/obtener_datos_tabla`,
+                data: datos => {
+                    datos.tipo = 'importaciones_pagos'
+                    datos.importacion_id = $('#importacion_id').val()
+                },
+            },
+            columns: [
+                { title: 'Fecha', data: 'fecha', width: '90px' },
+                { title: 'Importación', data: 'importacion' },
+                { title: 'Valor (Ext.)', data: 'valor_moneda_extranjera', className: 'text-right',
+                    render: (v, t, r) => parseFloat(v).toLocaleString('es-CO', {minimumFractionDigits: 2}) + ' ' + (r.tipo_moneda_id == 1 ? 'COP' : r.tipo_moneda_id == 3 ? 'EUR' : 'USD') },
+                { title: 'Valor COP', data: 'valor_cop', className: 'text-right',
+                    render: v => '$' + parseFloat(v).toLocaleString('es-CO', {minimumFractionDigits: 0}) },
+                { title: 'Estado', data: 'estado_texto' },
+                { title: 'Acciones', data: null, width: '80px', orderable: false,
+                    render: (d, t, r) => `<a href="${$('#site_url').val()}importaciones/pagos/editar/${r.id}" class="btn btn-xs btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>` }
+            ],
+            columnDefs: [{ targets: '_all', className: 'dt-head-center p-1' }],
+            language: { url: '<?php echo base_url(); ?>js/dataTables_espanol.json' },
+            ordering: false,
+            pageLength: 25,
+            processing: true,
+            serverSide: true,
+            searching: false,
+            destroy: true,
+        })
+    }
+
     $().ready(() => {
         listarImportacionesBitacora()
+        listarPagosImportacion()
     })
 </script>
