@@ -703,7 +703,7 @@ class Marketing extends MY_Controller
         }
         
         for ($i = 1; $i <= 6; $i++) {
-            $campo_variable = "variable{$i}";
+            $campo_variable = "variable_{$i}";
             if (isset($contacto->$campo_variable) && !empty($contacto->$campo_variable)) {
                 $parametros[] = $contacto->$campo_variable;
             }
