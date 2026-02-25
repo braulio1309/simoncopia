@@ -147,6 +147,13 @@
                         <div class="form-group col-lg-4 col-sm-12">
                             <label for="usuario_clave1">Contraseña *</label>
                             <input type="password" class="form-control" id="usuario_clave1">
+                             <div id="reglas_clave" class="mt-2" style="display:none; font-size:0.85em;">
+                                <div id="regla_longitud" class="text-danger"><i class="fas fa-times-circle"></i> Mínimo 12 caracteres</div>
+                                <div id="regla_numero" class="text-danger"><i class="fas fa-times-circle"></i> Al menos un número</div>
+                                <div id="regla_mayuscula" class="text-danger"><i class="fas fa-times-circle"></i> Al menos una letra mayúscula</div>
+                                <div id="regla_minuscula" class="text-danger"><i class="fas fa-times-circle"></i> Al menos una letra minúscula</div>
+                                <div id="regla_especial" class="text-danger"><i class="fas fa-times-circle"></i> Al menos un carácter especial (!@#$%^&amp;*...)</div>
+                            </div>
                         </div>
 
                         <div class="form-group col-lg-4 col-sm-12">
@@ -225,6 +232,8 @@
 
 <script>
     let esVendedor = ($('#codigo_vendedor').val() == 0) ? false : true
+
+    
         
     crearUsuario = async() => {
         let camposObligatorios = [
@@ -270,6 +279,11 @@
         // Si no coinciden los números de documento
         if ($("#usuario_numero_documento1").val() !== $("#usuario_numero_documento2").val()) {
             mostrarAviso('alerta', `Los números de documento no coinciden. Por favor, verifica nuevamente.`, 10000)
+            return false
+        }
+
+         if (!esVendedor && !validarComplejidadClave($("#usuario_clave1").val())) {
+            mostrarAviso('alerta', `La contraseña no cumple con los requisitos mínimos de seguridad.`, 10000)
             return false
         }
 
@@ -480,5 +494,37 @@
         $(`#usuario_direccion`).keyup(function() {
             $(this).val(limpiarCadena($(this).val(), true))
         })
+
+        // Validación visual de complejidad de contraseña
+        $('#usuario_clave1').on('focus input', function() {
+            $('#reglas_clave').show()
+            actualizarReglasVisuales($(this).val())
+        }).on('blur', function() {
+            if ($(this).val() === '') $('#reglas_clave').hide()
+        })
     })
+
+    validarComplejidadClave = (clave) => {
+        return clave.length >= 12
+            && /[0-9]/.test(clave)
+            && /[A-Z]/.test(clave)
+            && /[a-z]/.test(clave)
+            && /[^A-Za-z0-9]/.test(clave)
+    }
+
+    actualizarReglasVisuales = (clave) => {
+        const reglas = [
+            { id: 'regla_longitud',  ok: clave.length >= 12,          texto: 'Mínimo 12 caracteres' },
+            { id: 'regla_numero',    ok: /[0-9]/.test(clave),         texto: 'Al menos un número' },
+            { id: 'regla_mayuscula', ok: /[A-Z]/.test(clave),         texto: 'Al menos una letra mayúscula' },
+            { id: 'regla_minuscula', ok: /[a-z]/.test(clave),         texto: 'Al menos una letra minúscula' },
+            { id: 'regla_especial',  ok: /[^A-Za-z0-9]/.test(clave), texto: 'Al menos un carácter especial (!@#$%^&*...)' },
+        ]
+        reglas.forEach(r => {
+            const icono = r.ok ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>'
+            $(`#${r.id}`).html(`${icono} ${r.texto}`)
+                .removeClass('text-danger text-success')
+                .addClass(r.ok ? 'text-success' : 'text-danger')
+        })
+    }
 </script>
