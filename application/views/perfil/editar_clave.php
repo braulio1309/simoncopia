@@ -20,6 +20,13 @@
                 <div class="form-group">
                     <label for="password-new">New Password</label>
                     <input type="password" class="form-control" id="password-new" placeholder="New Password">
+                    <div id="reglas_clave_perfil" class="mt-2" style="display:none; font-size:0.85em;">
+                        <div id="pc_regla_longitud" class="text-danger"><i class="fas fa-times-circle"></i> Mínimo 12 caracteres</div>
+                        <div id="pc_regla_numero" class="text-danger"><i class="fas fa-times-circle"></i> Al menos un número</div>
+                        <div id="pc_regla_mayuscula" class="text-danger"><i class="fas fa-times-circle"></i> Al menos una letra mayúscula</div>
+                        <div id="pc_regla_minuscula" class="text-danger"><i class="fas fa-times-circle"></i> Al menos una letra minúscula</div>
+                        <div id="pc_regla_especial" class="text-danger"><i class="fas fa-times-circle"></i> Al menos un carácter especial (!@#$%^&amp;*...)</div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="password-confirm">Reenter New Password</label>

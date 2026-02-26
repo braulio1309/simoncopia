@@ -331,6 +331,10 @@ class Interfaces extends CI_Controller {
                 print json_encode(['resultado' => $this->marketing_model->crear("marketing_beneficios", $datos)]);
             break;
 
+            case 'marketing_beneficios_productos':
+                print json_encode(['resultado' => $this->marketing_model->crear("marketing_beneficios_productos", $datos)]);
+            break;
+
             case 'recibos_detalle':
                 // Vamos a guardar el detalle de la factura
                 $items_recibo = [];
@@ -661,6 +665,10 @@ class Interfaces extends CI_Controller {
             case 'facturacion_reglas':
                 print json_encode(['resultado' => $this->logistica_model->eliminar($tipo, $datos)]);
             break;
+
+            case 'marketing_beneficios_productos':
+                print json_encode(['resultado' => $this->marketing_model->eliminar('marketing_beneficios_productos', $datos)]);
+            break;
         }
     }
 
@@ -740,6 +748,10 @@ class Interfaces extends CI_Controller {
 
             case 'productos':
                 $resultado =  ['resultado' => $this->productos_model->obtener('productos', $datos)];
+            break;
+
+            case 'marketing_beneficios_productos':
+                $resultado = ['resultado' => $this->marketing_model->obtener('marketing_beneficios_productos', $datos)];
             break;
 
             case 'producto_bodegas_disponibles':

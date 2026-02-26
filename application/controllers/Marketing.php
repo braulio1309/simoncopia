@@ -186,6 +186,11 @@ class Marketing extends MY_Controller
                 $this->data['contenido_principal'] = 'marketing/beneficios/detalle';
                 $this->load->view('core/body', $this->data);
                 break;
+            case 'alcance':
+                $this->data['id'] = $this->uri->segment(4);
+                $this->data['contenido_principal'] = 'marketing/beneficios/alcance';
+                $this->load->view('core/body', $this->data);
+                break;
             case 'ver':
                 $this->data['contenido_principal'] = 'marketing/beneficios/index';
                 $this->load->view('core/body', $this->data);
@@ -703,7 +708,7 @@ class Marketing extends MY_Controller
         }
         
         for ($i = 1; $i <= 6; $i++) {
-            $campo_variable = "variable{$i}";
+            $campo_variable = "variable_{$i}";
             if (isset($contacto->$campo_variable) && !empty($contacto->$campo_variable)) {
                 $parametros[] = $contacto->$campo_variable;
             }

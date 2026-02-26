@@ -255,6 +255,26 @@ Class Marketing_model extends CI_Model {
                 if (isset($datos['id'])) return $this->db->query($sql)->row();
         return $this->db->query($sql)->result();
                     break;
+
+            case 'marketing_beneficios_productos':
+                $where = "WHERE mbp.id IS NOT NULL";
+
+                if (isset($datos['beneficio_id'])) $where .= " AND mbp.beneficio_id = " . (int)$datos['beneficio_id'];
+                if (isset($datos['id'])) $where .= " AND mbp.id = " . (int)$datos['id'];
+
+                $sql = "SELECT
+                            mbp.*,
+                            p.referencia,
+                            p.notas,
+                            p.descripcion_corta
+                        FROM marketing_beneficios_productos mbp
+                        LEFT JOIN productos p ON p.id = mbp.producto_id
+                        $where
+                        ORDER BY mbp.id ASC";
+
+                if (isset($datos['id'])) return $this->db->query($sql)->row();
+                return $this->db->query($sql)->result();
+                break;
             }
         }
 }

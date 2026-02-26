@@ -921,3 +921,13 @@ CREATE TABLE `marketing_beneficios` (
   `tipo_venta` varchar(20) NULL COMMENT 'contado o crédito',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 20260226 Alcance de beneficios: campo alcance_tipo en marketing_beneficios y tabla de productos específicos
+ALTER TABLE `marketing_beneficios` ADD COLUMN `alcance_tipo` varchar(50) DEFAULT 'toda_la_tienda' COMMENT 'toda_la_tienda o productos_especificos' AFTER `tipo_venta`;
+
+CREATE TABLE `marketing_beneficios_productos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `beneficio_id` int NOT NULL,
+  `producto_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `beneficio_id` (`beneficio_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

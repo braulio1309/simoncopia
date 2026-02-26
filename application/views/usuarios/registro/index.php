@@ -293,6 +293,12 @@
             return false
         }
 
+        // Validación de complejidad de contraseña
+        if (!esVendedor && !validarComplejidadClave($("#usuario_clave1").val())) {
+            mostrarAviso('alerta', `La contraseña no cumple con los requisitos mínimos de seguridad.`, 10000)
+            return false
+        }
+
         // Se consulta si existe un usuario con ese mismo documento y correo electrónico
         let usuarioTerceroExistente = await consulta('obtener', {tipo: 'usuarios', documento_numero: $.trim($('#usuario_numero_documento1').val()), email: $.trim($('#usuario_email').val())})
 

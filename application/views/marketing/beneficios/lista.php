@@ -91,6 +91,11 @@
                                title="Editar beneficio">
                                 <i class="fa fa-pencil"></i>
                             </a>
+                            <a class="btn btn-sm btn-warning ml-1"
+                               href="${$("#site_url").val()}marketing/beneficios/alcance/${data.id}" 
+                               title="Definir alcance del beneficio">
+                                <i class="fa fa-bullseye"></i> Alcance
+                            </a>
                         `
                     }
                 }
