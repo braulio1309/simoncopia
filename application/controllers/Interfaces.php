@@ -115,6 +115,10 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->marketing_model->actualizar($tipo, ['id' => $id], $datos);
             break;
 
+            case 'marketing_beneficios_productos':
+                $resultado = $this->marketing_model->actualizar($tipo, ['id' => $id], $datos);
+            break;
+
             case 'facturacion_reglas':
                 $resultado = $this->logistica_model->actualizar($tipo, ['id' => $id], $datos);
             break;

@@ -928,6 +928,11 @@ CREATE TABLE `marketing_beneficios_productos` (
   `id` int NOT NULL AUTO_INCREMENT,
   `beneficio_id` int NOT NULL,
   `producto_id` int NOT NULL,
+  `valor_tipo` varchar(20) DEFAULT 'nominal' COMMENT 'nominal o porcentaje',
+  `valor` decimal(10,2) DEFAULT 0.00,
   PRIMARY KEY (`id`),
   KEY `beneficio_id` (`beneficio_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 20260226 Valor por producto en beneficio: campos valor_tipo y valor en marketing_beneficios_productos
+ALTER TABLE `marketing_beneficios_productos` ADD COLUMN IF NOT EXISTS `valor_tipo` varchar(20) DEFAULT 'nominal' COMMENT 'nominal o porcentaje' AFTER `producto_id`;
+ALTER TABLE `marketing_beneficios_productos` ADD COLUMN IF NOT EXISTS `valor` decimal(10,2) DEFAULT 0.00 AFTER `valor_tipo`;
