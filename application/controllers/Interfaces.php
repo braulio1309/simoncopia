@@ -127,6 +127,18 @@ class Interfaces extends CI_Controller {
                 if(isset($datos['clave'])) $datos['clave'] = sha1($datos['clave']);
 
                 $resultado = $this->configuracion_model->actualizar($tipo, $id, $datos);
+
+                if($tipo === 'usuarios' && isset($datos['clave'])) {
+                    try {
+                        $this->configuracion_model->crear('usuarios_claves_historial', [
+                            'usuario_id' => $id,
+                            'clave' => $datos['clave'],
+                            'fecha_creacion' => date('Y-m-d H:i:s'),
+                        ]);
+                    } catch (Exception $e) {
+                        log_message('error', 'Error al guardar historial de clave del usuario: ' . $e->getMessage());
+                    }
+                }
             break;
         }
 
@@ -587,8 +599,20 @@ class Interfaces extends CI_Controller {
                 $datos['usuario_id'] = $this->session->userdata('usuario_id');
                 $datos['token'] = generar_token($datos['fecha_creacion']);
                 $datos['clave'] = sha1($datos['clave']);
-                
-                print json_encode(['resultado' => $this->configuracion_model->crear($tipo, $datos)]);
+
+                $nuevo_usuario_id = $this->configuracion_model->crear($tipo, $datos);
+
+                try {
+                    $this->configuracion_model->crear('usuarios_claves_historial', [
+                        'usuario_id' => $nuevo_usuario_id,
+                        'clave' => $datos['clave'],
+                        'fecha_creacion' => $datos['fecha_creacion'],
+                    ]);
+                } catch (Exception $e) {
+                    log_message('error', 'Error al guardar historial de clave del usuario: ' . $e->getMessage());
+                }
+
+                print json_encode(['resultado' => $nuevo_usuario_id]);
             break;
 
             case 'productos_metadatos':

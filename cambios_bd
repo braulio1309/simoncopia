@@ -936,3 +936,14 @@ CREATE TABLE `marketing_beneficios_productos` (
 -- 20260226 Valor por producto en beneficio: campos valor_tipo y valor en marketing_beneficios_productos
 ALTER TABLE `marketing_beneficios_productos` ADD COLUMN IF NOT EXISTS `valor_tipo` varchar(20) DEFAULT 'nominal' COMMENT 'nominal o porcentaje' AFTER `producto_id`;
 ALTER TABLE `marketing_beneficios_productos` ADD COLUMN IF NOT EXISTS `valor` decimal(10,2) DEFAULT 0.00 AFTER `valor_tipo`;
+
+-- 20260226 Se agrega tabla para historial de claves de usuarios
+CREATE TABLE `usuarios_claves_historial` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `usuario_id` int(11) NOT NULL,
+    `clave` varchar(255) NOT NULL,
+    `fecha_creacion` datetime NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `usuario_id` (`usuario_id`),
+    CONSTRAINT `usuarios_claves_historial_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
