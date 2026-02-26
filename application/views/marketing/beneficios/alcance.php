@@ -126,13 +126,18 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
         })
     }
 
-    agregarProductoAlBeneficio = async (productoId, referencia, descripcion) => {
+    agregarProductoAlBeneficio = async (productoId, referencia, descripcion, btn) => {
         let beneficioId = $("#beneficio_id").val()
+        let fila = $(btn).closest('tr')
+        let valorTipo = fila.find('.valor_tipo_input').val()
+        let valor = fila.find('.valor_input').val()
 
         let respuesta = await consulta('crear', {
             tipo: 'marketing_beneficios_productos',
             beneficio_id: beneficioId,
-            producto_id: productoId
+            producto_id: productoId,
+            valor_tipo: valorTipo,
+            valor: valor
         }, false)
 
         if (respuesta && respuesta.resultado) {
