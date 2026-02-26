@@ -85,13 +85,14 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
 
         <div class="mt-3">
             <button class="btn btn-info" onClick="javascript:history.back()">Volver</button>
+            <button class="btn btn-success" onclick="javascript:guardarAlcanceTipo(true)">Guardar</button>
         </div>
     </div>
 </div>
 <div class="block-space block-space--layout--before-footer"></div>
 
 <script>
-    guardarAlcanceTipo = async () => {
+    guardarAlcanceTipo = async (redirigir = false) => {
         let beneficioId = $("#beneficio_id").val()
         let alcanceTipo = $("#alcance_tipo").val()
 
@@ -113,6 +114,9 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
         }
 
         mostrarAviso('exito', 'Alcance guardado correctamente')
+        if (redirigir) {
+            setTimeout(() => window.location.href = `${$('#site_url').val()}marketing/beneficios/ver`, 1500)
+        }
     }
 
     listarProductosSeleccionados = () => {
@@ -125,14 +129,18 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
     agregarProductoAlBeneficio = async (productoId, referencia, descripcion) => {
         let beneficioId = $("#beneficio_id").val()
 
-        let resultado = await consulta('crear', {
+        let respuesta = await consulta('crear', {
             tipo: 'marketing_beneficios_productos',
             beneficio_id: beneficioId,
             producto_id: productoId
         }, false)
 
-        mostrarAviso('exito', `Producto "${referencia}" agregado al beneficio`)
-        listarProductosSeleccionados()
+        if (respuesta && respuesta.resultado) {
+            mostrarAviso('exito', `Producto "${referencia}" agregado al beneficio`)
+            listarProductosSeleccionados()
+        } else {
+            mostrarAviso('error', `No se pudo agregar el producto "${referencia}"`)
+        }
     }
 
     $().ready(function() {

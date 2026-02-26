@@ -90,11 +90,14 @@
         if (id) {
             datos.id = id
             await consulta('actualizar', datos, false)
+            mostrarAviso('exito', 'Beneficio guardado correctamente')
+            setTimeout(() => history.back(), 1500)
         } else {
-            await consulta('crear', datos, false)
+            let resultado = await consulta('crear', datos, false)
+            let nuevoId = resultado.resultado
+            mostrarAviso('exito', 'Beneficio guardado correctamente')
+            setTimeout(() => window.location.href = `${$('#site_url').val()}marketing/beneficios/alcance/${nuevoId}`, 1500)
         }
-        mostrarAviso('exito', 'Beneficio guardado correctamente')
-        setTimeout(() => history.back(), 1500)
     }
     $().ready(() => {
         // Mostrar/ocultar campo de código de descuento según el tipo
