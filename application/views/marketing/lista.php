@@ -35,6 +35,7 @@
                         <label for="telefono_prueba" class="font-weight-bold">Número de teléfono destino:</label>
                         <input type="number" class="form-control form-control-lg" id="telefono_prueba" placeholder="Ej: 3206335588" value="<?php print_r($this->session->userdata('celular')); ?>" required>
                     </div>
+                    <div id="contenedor_variables_prueba"></div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -96,9 +97,34 @@
     // ==========================================
     const abrirModalPrueba = (id) => {
         $('#id_campania_prueba').val(id)
-        $('#modal_prueba_whatsapp').modal('show')
-        // Auto-focus al input
-        setTimeout(() => { $('#telefono_prueba').focus() }, 500)
+        $('#contenedor_variables_prueba').html('')
+
+        $.ajax({
+            url: `${$("#site_url").val()}marketing/obtener_variables_campania`,
+            method: 'POST',
+            data: { campania_id: id },
+            dataType: 'json',
+            success: function(respuesta) {
+                if (respuesta.exito && respuesta.cantidad > 0) {
+                    let html = ''
+                    for (let i = 1; i <= respuesta.cantidad; i++) {
+                        html += `
+                            <div class="form-group">
+                                <label for="variable_prueba_${i}" class="font-weight-bold">Variable ${i}:</label>
+                                <input type="text" class="form-control" id="variable_prueba_${i}" placeholder="Variable ${i}">
+                            </div>
+                        `
+                    }
+                    $('#contenedor_variables_prueba').html(html)
+                }
+                $('#modal_prueba_whatsapp').modal('show')
+                setTimeout(() => { $('#telefono_prueba').focus() }, 500)
+            },
+            error: function() {
+                $('#modal_prueba_whatsapp').modal('show')
+                setTimeout(() => { $('#telefono_prueba').focus() }, 500)
+            }
+        })
     }
 
     const ejecutarEnvioPrueba = () => {
@@ -108,6 +134,16 @@
         if (!telefono) {
             mostrarAviso('alerta', 'Debes ingresar un número de teléfono.')
             return false
+        }
+
+        let datos = { campania_id: id, telefono: telefono }
+
+        // Recoger variables dinámicas ingresadas por el usuario
+        for (let i = 1; i <= 6; i++) {
+            let input = $(`#variable_prueba_${i}`)
+            if (input.length) {
+                datos[`variable_${i}`] = input.val()
+            }
         }
 
         $('#modal_prueba_whatsapp').modal('hide')
@@ -122,7 +158,7 @@
         $.ajax({
             url: `${$("#site_url").val()}marketing/enviar_prueba_whatsapp`,
             method: 'POST',
-            data: { campania_id: id, telefono: telefono },
+            data: datos,
             dataType: 'json',
             success: function(respuesta) {
                 Swal.close()

@@ -642,6 +642,32 @@ class Marketing extends MY_Controller
         print json_encode(['resultado' => $resultado]);
     }
 
+    public function obtener_variables_campania()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $campania_id = $this->input->post('campania_id');
+
+        if (!$campania_id) {
+            echo json_encode(['exito' => false, 'cantidad' => 0]);
+            return;
+        }
+
+        $contacto = $this->db->get_where('marketing_campanias_contactos', ['campania_id' => $campania_id])->row();
+
+        $cantidad = 0;
+        if ($contacto) {
+            for ($i = 1; $i <= 6; $i++) {
+                $campo = "variable_{$i}";
+                if (isset($contacto->$campo) && !empty($contacto->$campo)) {
+                    $cantidad++;
+                }
+            }
+        }
+
+        echo json_encode(['exito' => true, 'cantidad' => $cantidad]);
+    }
+
     public function enviar_prueba_whatsapp()
     {
         // 1. Validar que sea AJAX
@@ -670,14 +696,15 @@ class Marketing extends MY_Controller
 
         try {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
-            
-            $contacto = $this->db->get_where('marketing_campanias_contactos', [
-                'campania_id' => $campania_id,
-                'telefono' => $numero_telefonico
-            ])->row();
-            
-            // Preparar variables dinámicas desde la base de datos
-            $parametros = $this->extraer_variables_contacto($contacto);
+
+            // Preparar variables dinámicas desde los datos enviados en el formulario
+            $parametros = [];
+            for ($i = 1; $i <= 6; $i++) {
+                $valor = $this->input->post("variable_{$i}");
+                if ($valor !== null && $valor !== '') {
+                    $parametros[] = $valor;
+                }
+            }
 
             // $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, 'https://i0.wp.com/devimed.com.co/wp-content/uploads/2023/03/devimed.png');
             $resultado = $this->whatsapp_api->enviar_mensaje_con_imagen($numero_telefonico, $nombre_plantilla, 'es_CO', $ruta_imagen, $parametros);
