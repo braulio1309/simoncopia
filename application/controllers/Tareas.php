@@ -15,7 +15,7 @@ class Tareas extends MY_Controller {
         // Todas las respuestas se enviarán en formato JSON
         header('Content-type: application/json');
 
-        $this->load->model(['clientes_model', 'contabilidad_model', 'productos_model', 'proveedores_model']);
+        $this->load->model(['clientes_model', 'contabilidad_model', 'logistica_model', 'productos_model', 'proveedores_model']);
 
         $this->config->load('microsoft_graph', TRUE);
     }
@@ -604,6 +604,174 @@ class Tareas extends MY_Controller {
             'error' => false,
             'resultado' => $resultado,
         ]);
+    }
+
+    /**
+     * Revisa las reglas de facturación activas y determina cuáles
+     * deben ejecutarse en el momento actual (tarea programada cada 5 minutos).
+     *
+     * RF-2: Para cada pedido comprometido:
+     * - Verifica modalidad (Contado/Crédito)
+     * - Consulta si el cliente requiere OC obligatoria (tabla facturacion_reglas)
+     * - Si requiere OC, valida que el pedido tenga OC
+     * - Si es Contado: listo para facturar si fue aprobado en los últimos 10 minutos
+     * - Si es Crédito: listo si ha llegado la fecha/hora de facturación de la regla
+     * - Registra excepciones cuando no se cumplen las condiciones
+     *
+     * @return void
+     */
+    function logistica_ejecutar_reglas_facturacion() {
+        $inicio = microtime(true);
+        $fecha_inicio = date('Y-m-d H:i:s');
+        $excepciones_count = 0;
+
+        // Datos del momento actual
+        $hora_actual      = date('H:i');
+        $dia_semana_actual = (int) date('N'); // 1=Lunes, 7=Domingo
+        $dia_mes_actual   = (int) date('j');
+
+        // Obtener todas las reglas de facturación activas
+        $reglas = $this->logistica_model->obtener('facturacion_reglas', [
+            'filtros_personalizados' => ['activa' => '1']
+        ]);
+
+        $reglas_a_ejecutar = [];
+        $reglas_omitidas   = 0;
+
+        // Determinar qué reglas deben ejecutarse en este momento
+        foreach ($reglas as $regla) {
+            $debe_ejecutar  = false;
+            $hora_programada = substr($regla->hora_programada, 0, 5); // HH:MM
+
+            switch ($regla->tipo_frecuencia) {
+                case 'diaria':
+                case 'personalizada':
+                    // Diaria y personalizada: se ejecutan todos los días en la hora programada
+                    $debe_ejecutar = ($hora_actual === $hora_programada);
+                    break;
+
+                case 'semanal':
+                    // Se ejecuta el día de la semana configurado en la hora indicada
+                    $debe_ejecutar = ($dia_semana_actual == $regla->dia_semana && $hora_actual === $hora_programada);
+                    break;
+
+                case 'mensual':
+                    // Se ejecuta el día del mes configurado en la hora indicada
+                    $debe_ejecutar = ($dia_mes_actual == $regla->dia_mes && $hora_actual === $hora_programada);
+                    break;
+            }
+
+            if ($debe_ejecutar) {
+                $reglas_a_ejecutar[] = $regla;
+            } else {
+                $reglas_omitidas++;
+            }
+        }
+
+        $pedidos_listos = [];
+        $excepciones    = [];
+
+        // Procesar cada regla que debe ejecutarse ahora
+        foreach ($reglas_a_ejecutar as $regla) {
+            // Obtener pedidos comprometidos (f430_ind_estado = 3) del cliente asociado a la regla
+            $pedidos = $this->db
+                ->where('f200_nit_pedido_rem', $regla->cliente_nit)
+                ->where('f430_ind_estado', 3)
+                ->get('erp_ventas_pedidos')
+                ->result();
+
+            foreach ($pedidos as $pedido) {
+                $numero_pedido = implode('-', [
+                    $pedido->f430_id_co_fact,
+                    $pedido->f430_id_tipo_docto,
+                    str_pad($pedido->f430_consec_docto, 8, '0', STR_PAD_LEFT)
+                ]);
+
+                // Determinar modalidad: CPE = Contado, CPV = Crédito
+                $es_contado = ($pedido->f430_id_tipo_docto === 'CPE');
+                $es_credito = ($pedido->f430_id_tipo_docto === 'CPV');
+
+                $excepcion = null;
+
+                // Verificar si la regla requiere OC y si el pedido la tiene
+                if ($regla->requiere_orden_compra == 1 && empty(trim((string) $pedido->f430_num_docto_referencia))) {
+                    $excepcion = 'Pedido sin orden de compra obligatoria';
+                }
+
+                if ($excepcion === null) {
+                    if ($es_contado) {
+                        // Contado: el pedido debe haber sido aprobado en los últimos 10 minutos
+                        $fecha_aprobacion = strtotime($pedido->f430_fecha_ts_aprobacion);
+
+                        if ($fecha_aprobacion === false) {
+                            $excepcion = 'Fecha de aprobación del pedido inválida o no disponible';
+                        } else {
+                            $minutos_transcurridos = (time() - $fecha_aprobacion) / 60;
+
+                            if ($minutos_transcurridos <= 10) {
+                                $pedidos_listos[] = [
+                                    'regla_id'      => $regla->id,
+                                    'regla_nombre'  => $regla->nombre,
+                                    'pedido_numero' => $numero_pedido,
+                                    'nit'           => $regla->cliente_nit,
+                                    'modalidad'     => 'Contado',
+                                ];
+                            } else {
+                                $excepcion = 'Pedido de contado supera los 10 minutos permitidos para facturación';
+                            }
+                        }
+                    } elseif ($es_credito) {
+                        // Crédito: la fecha/hora de facturación de la regla ya llegó
+                        $pedidos_listos[] = [
+                            'regla_id'      => $regla->id,
+                            'regla_nombre'  => $regla->nombre,
+                            'pedido_numero' => $numero_pedido,
+                            'nit'           => $regla->cliente_nit,
+                            'modalidad'     => 'Crédito',
+                        ];
+                    } else {
+                        $excepcion = "Modalidad de pago no reconocida ({$pedido->f430_id_tipo_docto})";
+                    }
+                }
+
+                if ($excepcion !== null) {
+                    $excepciones_count++;
+                    $excepciones[] = [
+                        'regla_id'      => $regla->id,
+                        'regla_nombre'  => $regla->nombre,
+                        'pedido_numero' => $numero_pedido,
+                        'nit'           => $regla->cliente_nit,
+                        'motivo'        => $excepcion,
+                    ];
+                }
+            }
+        }
+
+        $fin = microtime(true);
+
+        $detalle_resultado = [
+            'inicio'            => $fecha_inicio,
+            'reglas_revisadas'  => count($reglas),
+            'reglas_a_ejecutar' => count($reglas_a_ejecutar),
+            'reglas_omitidas'   => $reglas_omitidas,
+            'pedidos_listos'    => $pedidos_listos,
+            'excepciones'       => $excepciones,
+            'tiempo_ejecucion'  => round($fin - $inicio, 2) . ' segundos',
+        ];
+
+        // Registrar en los logs
+        $this->configuracion_model->crear('logs', [
+            'log_tipo_id'    => 110,
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+            'observacion'    => json_encode($detalle_resultado),
+        ]);
+
+        print json_encode([
+            'excepciones' => $excepciones_count,
+            'resultado'   => $detalle_resultado,
+        ]);
+
+        http_response_code(200);
     }
 
     /**
