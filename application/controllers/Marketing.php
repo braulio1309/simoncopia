@@ -650,6 +650,7 @@ class Marketing extends MY_Controller
         }
 
         $campania_id = $this->input->post('campania_id');
+        $telefono_prueba = trim($this->input->post('telefono_prueba'));
 
         // 2. Obtener datos de la campaña (necesitamos el nombre de la plantilla)
         $campania = $this->db->get_where('marketing_campanias', ['id' => $campania_id])->row();
@@ -667,10 +668,15 @@ class Marketing extends MY_Controller
             return;
         }
 
+        if (empty($telefono_prueba) || !preg_match('/^\d{7,15}$/', $telefono_prueba)) {
+            echo json_encode(['exito' => false, 'mensaje' => 'Debe ingresar un número de teléfono válido (solo dígitos, entre 7 y 15 caracteres).']);
+            return;
+        }
+
         try {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
 
-            // Buscar el primer contacto de la campaña para usar sus datos en la prueba
+            // Buscar el primer contacto de la campaña para usar sus datos de plantilla en la prueba
             $contacto = $this->db->where('campania_id', $campania_id)->order_by('id', 'ASC')->limit(1)->get('marketing_campanias_contactos')->row();
 
             if (!$contacto) {
@@ -678,7 +684,7 @@ class Marketing extends MY_Controller
                 return;
             }
 
-            $numero_telefonico = $contacto->telefono;
+            $numero_telefonico = $telefono_prueba;
             
             // Preparar variables dinámicas desde la base de datos
             $parametros = $this->extraer_variables_contacto($contacto);

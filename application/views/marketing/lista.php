@@ -67,29 +67,45 @@
     // ==========================================
     const ejecutarEnvioPrueba = (id) => {
         Swal.fire({
-            title: 'Enviando prueba...',
-            text: 'Conectando con WhatsApp API',
-            didOpen: () => { Swal.showLoading() },
-            allowOutsideClick: false
-        })
-
-        $.ajax({
-            url: `${$("#site_url").val()}marketing/enviar_prueba_whatsapp`,
-            method: 'POST',
-            data: { campania_id: id },
-            dataType: 'json',
-            success: function(respuesta) {
-                Swal.close()
-                if (respuesta.exito) {
-                    mostrarAviso('exito', 'Mensaje de prueba enviado correctamente.')
-                } else {
-                    mostrarAviso('error', respuesta.mensaje || 'Error al enviar.')
-                }
-            },
-            error: function() {
-                Swal.close()
-                mostrarAviso('error', 'Error de conexión con el servidor.')
+            title: 'Enviar prueba',
+            input: 'text',
+            inputLabel: 'Número de teléfono',
+            inputPlaceholder: 'Ej: 573001234567',
+            showCancelButton: true,
+            confirmButtonText: 'Enviar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+                if (!value) return 'Por favor ingresa un número de teléfono.'
+                if (!/^\d{7,15}$/.test(value.trim())) return 'El número debe contener solo dígitos (entre 7 y 15).'
             }
+        }).then((result) => {
+            if (!result.isConfirmed) return
+
+            Swal.fire({
+                title: 'Enviando prueba...',
+                text: 'Conectando con WhatsApp API',
+                didOpen: () => { Swal.showLoading() },
+                allowOutsideClick: false
+            })
+
+            $.ajax({
+                url: `${$("#site_url").val()}marketing/enviar_prueba_whatsapp`,
+                method: 'POST',
+                data: { campania_id: id, telefono_prueba: result.value },
+                dataType: 'json',
+                success: function(respuesta) {
+                    Swal.close()
+                    if (respuesta.exito) {
+                        mostrarAviso('exito', 'Mensaje de prueba enviado correctamente.')
+                    } else {
+                        mostrarAviso('error', respuesta.mensaje || 'Error al enviar.')
+                    }
+                },
+                error: function() {
+                    Swal.close()
+                    mostrarAviso('error', 'Error de conexión con el servidor.')
+                }
+            })
         })
     }
 
