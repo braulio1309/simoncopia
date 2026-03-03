@@ -123,6 +123,21 @@ class Interfaces extends CI_Controller {
                 $resultado = $this->logistica_model->actualizar($tipo, ['id' => $id], $datos);
             break;
 
+            case 'usuarios':
+                if(isset($datos['clave'])) {
+                    $usuario_actual = $this->db->where('id', $id)->get('usuarios')->row();
+                    if($usuario_actual) {
+                        $this->db->insert('usuarios_historial_claves', [
+                            'usuario_id'     => $id,
+                            'clave'          => $usuario_actual->clave,
+                            'fecha_creacion' => date('Y-m-d H:i:s'),
+                        ]);
+                    }
+                    $datos['clave'] = sha1($datos['clave']);
+                }
+                $resultado = $this->configuracion_model->actualizar($tipo, $id, $datos);
+            break;
+
             default:
                 if(isset($datos['clave'])) $datos['clave'] = sha1($datos['clave']);
 

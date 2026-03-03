@@ -3,8 +3,16 @@ if (isset($id)) {
     $regla = $this->logistica_model->obtener('facturacion_reglas', ['id' => $id]);
     echo "<input type='hidden' id='regla_id' value='$regla->id' />";
 }
+$titulo_pagina = isset($id) ? 'Editar regla de facturación' : 'Crear regla de facturación';
 ?>
-<div class="block-space block-space--layout--after-header"></div>
+
+<div class="block-header block-header--has-breadcrumb block-header--has-title">
+    <div class="container">
+        <div class="block-header__body">
+            <h1 class="block-header__title"><?php echo $titulo_pagina; ?></h1>
+        </div>
+    </div>
+</div>
 
 <div class="block">
     <div class="container">
