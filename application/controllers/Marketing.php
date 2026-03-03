@@ -650,7 +650,6 @@ class Marketing extends MY_Controller
         }
 
         $campania_id = $this->input->post('campania_id');
-        $numero_telefonico = $this->input->post('telefono');
 
         // 2. Obtener datos de la campaña (necesitamos el nombre de la plantilla)
         $campania = $this->db->get_where('marketing_campanias', ['id' => $campania_id])->row();
@@ -670,11 +669,16 @@ class Marketing extends MY_Controller
 
         try {
             $ruta_imagen = (ENVIRONMENT == 'production') ? base_url() . "archivos/campanias/$campania->id/$campania->nombre_imagen" : 'https://repuestossimonbolivar.com/archivos/campanias/imagen_prueba.jpg';
-            
-            $contacto = $this->db->get_where('marketing_campanias_contactos', [
-                'campania_id' => $campania_id,
-                'telefono' => $numero_telefonico
-            ])->row();
+
+            // Buscar el primer contacto de la campaña para usar sus datos en la prueba
+            $contacto = $this->db->where('campania_id', $campania_id)->order_by('id', 'ASC')->limit(1)->get('marketing_campanias_contactos')->row();
+
+            if (!$contacto) {
+                echo json_encode(['exito' => false, 'mensaje' => 'Esta campaña no tiene contactos registrados.']);
+                return;
+            }
+
+            $numero_telefonico = $contacto->telefono;
             
             // Preparar variables dinámicas desde la base de datos
             $parametros = $this->extraer_variables_contacto($contacto);
