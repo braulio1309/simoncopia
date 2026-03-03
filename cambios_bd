@@ -936,3 +936,13 @@ CREATE TABLE `marketing_beneficios_productos` (
 -- 20260226 Valor por producto en beneficio: campos valor_tipo y valor en marketing_beneficios_productos
 ALTER TABLE `marketing_beneficios_productos` ADD COLUMN IF NOT EXISTS `valor_tipo` varchar(20) DEFAULT 'nominal' COMMENT 'nominal o porcentaje' AFTER `producto_id`;
 ALTER TABLE `marketing_beneficios_productos` ADD COLUMN IF NOT EXISTS `valor` decimal(10,2) DEFAULT 0.00 AFTER `valor_tipo`;
+
+-- 20260303 Tabla para historial de claves de usuarios
+CREATE TABLE IF NOT EXISTS `usuarios_historial_claves` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `usuario_id` int NULL,
+  `clave` varchar(100) NULL COMMENT 'Clave hasheada (sha1)',
+  `fecha_creacion` datetime NULL,
+  PRIMARY KEY (`id`),
+  KEY `usuario_id` (`usuario_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

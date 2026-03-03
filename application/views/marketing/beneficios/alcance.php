@@ -13,7 +13,7 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
 </div>
 
 <div class="block">
-    <div class="container container--max--xl">
+    <div class="container-fluid">
         <div class="row">
             <!-- Columna izquierda: selector de alcance y búsqueda -->
             <div class="col-lg-3">
@@ -26,7 +26,6 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
                                 <option value="productos_especificos" <?php echo ($alcance_tipo == 'productos_especificos' ? 'selected' : ''); ?>>Productos específicos</option>
                             </select>
                         </div>
-                        <button class="btn btn-success btn-block" onclick="javascript:guardarAlcanceTipo()">Guardar alcance</button>
                     </div>
                 </div>
 
@@ -151,7 +150,7 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
     $().ready(function() {
         let beneficioId = $("#beneficio_id").val()
 
-        // Mostrar/ocultar paneles al cambiar el select
+        // Mostrar/ocultar paneles al cambiar el select y guardar automáticamente
         $("#alcance_tipo").change(function() {
             if ($(this).val() === 'productos_especificos') {
                 $("#panel_buscar_productos").show()
@@ -162,6 +161,7 @@ $alcance_tipo = isset($beneficio->alcance_tipo) ? $beneficio->alcance_tipo : 'to
                 $("#panel_toda_tienda").show()
                 $("#panel_productos_especificos").hide()
             }
+            guardarAlcanceTipo()
         })
 
         // Si ya es productos específicos, cargar los seleccionados

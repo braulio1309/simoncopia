@@ -30,6 +30,13 @@
                                 <div class="form-group nueva_clave" hidden>
                                     <label for="recuperacion_clave1">Escribe tu nueva clave</label>
                                     <input id="recuperacion_clave1" type="password" class="form-control form-control-sm">
+                                    <div id="reglas_clave_recuperacion" class="mt-2" style="display:none; font-size:0.85em;">
+                                        <div id="rc_regla_longitud" class="text-danger"><i class="fas fa-times-circle"></i> Mínimo 12 caracteres</div>
+                                        <div id="rc_regla_numero" class="text-danger"><i class="fas fa-times-circle"></i> Al menos un número</div>
+                                        <div id="rc_regla_mayuscula" class="text-danger"><i class="fas fa-times-circle"></i> Al menos una letra mayúscula</div>
+                                        <div id="rc_regla_minuscula" class="text-danger"><i class="fas fa-times-circle"></i> Al menos una letra minúscula</div>
+                                        <div id="rc_regla_especial" class="text-danger"><i class="fas fa-times-circle"></i> Al menos un carácter especial (!@#$%^&amp;*...)</div>
+                                    </div>
                                 </div>
 
                                 <div class="form-group nueva_clave" hidden>
@@ -64,6 +71,14 @@
 </div>
 
 <script>
+    const REGLAS_CLAVE = [
+        { id: 'rc_regla_longitud',  test: c => c.length >= 12,          texto: 'Mínimo 12 caracteres' },
+        { id: 'rc_regla_numero',    test: c => /[0-9]/.test(c),         texto: 'Al menos un número' },
+        { id: 'rc_regla_mayuscula', test: c => /[A-Z]/.test(c),         texto: 'Al menos una letra mayúscula' },
+        { id: 'rc_regla_minuscula', test: c => /[a-z]/.test(c),         texto: 'Al menos una letra minúscula' },
+        { id: 'rc_regla_especial',  test: c => /[^A-Za-z0-9]/.test(c), texto: 'Al menos un carácter especial (!@#$%^&*...)' },
+    ]
+
     actualizarUsuario = async(evento) => {
         evento.preventDefault()
 
@@ -75,6 +90,14 @@
         // Validación de campos obligatorios
         if (!validarCamposObligatorios(campos)) {
             mostrarAviso('alerta', 'Hay campos obligatorios por diligenciar')
+            return false
+        }
+
+        // Validación de complejidad de la clave
+        const clave = $("#recuperacion_clave1").val()
+        const reglasFallidas = REGLAS_CLAVE.filter(r => !r.test(clave)).map(r => r.texto)
+        if (reglasFallidas.length > 0) {
+            mostrarAviso('alerta', `La clave no cumple los requisitos de seguridad:<br>- ${reglasFallidas.join('<br>- ')}`, 10000)
             return false
         }
 
@@ -175,4 +198,20 @@
         $(`.solicitud_codigo`).attr('hidden', true)
         $(`.envio_codigo`).attr('hidden', false)
     }
+
+    $().ready(() => {
+        $('#recuperacion_clave1').on('focus input', function() {
+            $('#reglas_clave_recuperacion').show()
+            const clave = $(this).val()
+            REGLAS_CLAVE.forEach(r => {
+                const ok = r.test(clave)
+                const icono = ok ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>'
+                $(`#${r.id}`).html(`${icono} ${r.texto}`)
+                    .removeClass('text-danger text-success')
+                    .addClass(ok ? 'text-success' : 'text-danger')
+            })
+        }).on('blur', function() {
+            if ($(this).val() === '') $('#reglas_clave_recuperacion').hide()
+        })
+    })
 </script>

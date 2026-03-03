@@ -6,7 +6,7 @@
     }
 </style>
 <!-- Inicialización de la tabla -->
-<table class="table-striped table-bordered" id="tabla_beneficios"></table>
+<table class="table-striped table-bordered w-100" id="tabla_beneficios"></table>
 <script>
     let tablaBeneficios = null
     $().ready(async () => {

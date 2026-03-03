@@ -6,7 +6,7 @@
     </div>
 </div>
 <div class="block">
-    <div class="container container--max--xl">
+    <div class="container-fluid">
         <div class="row mb-4">
             <div class="col-3">
                 <a class="btn btn-success" href="<?php echo site_url('marketing/beneficios/crear'); ?>">Crear beneficio</a>
