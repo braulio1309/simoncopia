@@ -946,3 +946,19 @@ CREATE TABLE IF NOT EXISTS `usuarios_historial_claves` (
   PRIMARY KEY (`id`),
   KEY `usuario_id` (`usuario_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 20260304 feat(Importaciones): Tabla de tipos de carga y campo en importaciones
+CREATE TABLE `importaciones_cargas_tipos` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `nombre` varchar(100) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `importaciones_cargas_tipos` (`id`, `nombre`) VALUES
+(1, 'LCL (carga suelta)'),
+(2, '1*40HC'),
+(3, '2*40HC'),
+(4, '3*40HC');
+
+ALTER TABLE `importaciones` ADD COLUMN `importacion_carga_tipo_id` int(11) NULL AFTER `importacion_estado_id`;
+ALTER TABLE `importaciones` ADD CONSTRAINT `importaciones_ibfk_carga_tipo` FOREIGN KEY (`importacion_carga_tipo_id`) REFERENCES `importaciones_cargas_tipos` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT;

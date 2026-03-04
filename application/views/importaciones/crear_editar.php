@@ -120,6 +120,13 @@ if($id_importacion) {
                 </select>
             </div>
 
+            <div class="form-group col-md-3">
+                <label for="carga_tipo_id">Tipo de carga</label>
+                <select id="carga_tipo_id" class="form-control" data-valor-actual="<?php echo ($importacion && $importacion->importacion_carga_tipo_id) ? $importacion->importacion_carga_tipo_id : ''; ?>">
+                    <option value="">Cargando...</option>
+                </select>
+            </div>
+
             <div class="col-12 mb-3 mt-2">
                 <div class="tag-badge tag-badge--new badge_formulario badge_formulario_azul mb-3">
                     Valores y Moneda
@@ -294,6 +301,7 @@ if($id_importacion) {
             fecha_ingreso_siesa:    fechaSiesa,                  
             bl_awb:              $('#bl_awb').val(),
             importacion_estado_id:  $('#estado_id').val(),
+            importacion_carga_tipo_id: $('#carga_tipo_id').val() || null,
             
             moneda_preferida:    $('#moneda_preferida').val(),
             valor_total:         valorTotal,
@@ -334,6 +342,7 @@ if($id_importacion) {
                     fecha_ingreso_siesa: <?php echo json_encode($importacion->fecha_ingreso_siesa ? date('Y-m-d', strtotime($importacion->fecha_ingreso_siesa)) : '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     bl_awb: <?php echo json_encode($importacion->bl_awb ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     importacion_estado_id: <?php echo json_encode($importacion->importacion_estado_id ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                    importacion_carga_tipo_id: <?php echo json_encode($importacion->importacion_carga_tipo_id ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     moneda_preferida: <?php echo json_encode($importacion->moneda_preferida ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     valor_total: <?php echo json_encode($importacion->valor_total ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                     valor_total_cop: <?php echo json_encode($importacion->valor_total_cop ?? '', JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
@@ -355,6 +364,7 @@ if($id_importacion) {
                     fecha_ingreso_siesa: 'Fecha Ingreso SIESA',
                     bl_awb: 'BL / AWB',
                     importacion_estado_id: 'Estado',
+                    importacion_carga_tipo_id: 'Tipo de carga',
                     moneda_preferida: 'Moneda Preferida',
                     valor_total: 'Valor Total',
                     valor_total_cop: 'Valor Total COP',
@@ -466,6 +476,9 @@ if($id_importacion) {
         try {
             await listarDatos('pais_origen', { tipo: 'paises' }, $('#pais_origen').data('valor-actual'));
             await listarDatos('estado_id', { tipo: 'importaciones_estados' }, $('#estado_id').data('valor-actual'));
+            await listarDatos('carga_tipo_id', { tipo: 'importaciones_cargas_tipos' });
+            let cargaTipoActual = $('#carga_tipo_id').data('valor-actual');
+            if (cargaTipoActual) $('#carga_tipo_id').val(cargaTipoActual);
         } catch (e) {
             console.warn("Error cargando países", e);
         }
